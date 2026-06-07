@@ -5,6 +5,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import authRoutes from "./routes/authroutes.ts";
 import prisma from "./config/prisma.ts";
+import cookieParser from "cookie-parser";
 dotenv.config();
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
+app.use(cookieParser());
 
 const PORT = process.env.PORT;
 
