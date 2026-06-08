@@ -12,9 +12,57 @@ datasource db {
 
 
 model User{
-    id        Int       @id @default(autoincrement())
-    email     String    @unique
-    name      String?
-    password  String
-    createdAt DateTime @default(now())
-  }
+    id            Int       @id @default(autoincrement())
+    email         String    @unique
+    name          String?
+    password      String
+    createdAt     DateTime  @default(now())
+
+
+    ownerWorkspaces       Workspace[]         @relation("WorkspaceOwner")
+    workspaceMemberships  WorkspaceMembers[]
+    projects Project[]    @relation("ProjectCreator")
+}
+
+model Workspace{
+    id            Int       @id @default(autoincrement())
+    name          String
+    ownerId       Int  
+    owner         User      @relation("WorkspaceOwner",fields :[ownerId], references: [id])
+    members       WorkspaceMembers[]
+    projects      Project[]
+}
+
+model WorkspaceMembers{
+    @@id([workspaceId,userId]) 
+    workspaceId Int
+    userId      Int
+    role        Role          @default(Member)
+    workspace   Workspace     @relation(fields  :[workspaceId],references: [id])
+    user        User          @relation(fields: [userId], references: [id])
+}
+
+enum Role{
+    Owner
+    Admin
+    Member
+}
+
+model Project{
+    id            Int             @id @default(autoincrement())
+    name          String 
+    description   String
+    status        ProjectStatus   @default(PLANNING)
+    workspaceId   Int 
+    workspace     Workspace       @relation(fields: [workspaceId], references :[id])
+    createdById   Int
+    createdBy     User            @relation("ProjectCreator",fields:[createdById],references:[id])
+}
+
+enum ProjectStatus{
+    PLANNING
+    ACTIVE
+    ON_HOLD
+    COMPLETED
+    ARCHIVED
+}
