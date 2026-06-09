@@ -44,8 +44,9 @@ app.listen(PORT, () => {
 
 async function connectPrisma() {
   try {
-    await prisma.$queryRaw(`SELECT 1`);
-    console.log("database connected");
+    const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} ;`;
+
+    console.log("database connected", result);
   } catch (error) {
     console.log("database disconnected", error);
   }

@@ -162,6 +162,129 @@ export const addMember = async (req: Request, res: Response) => {
   }
 };
 
+export const getMember = async (req: Request, res: Response) => {
+  const user = req.user;
+  const workId = parseInt(req.params.id as string, 10);
+  try {
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        error: "Not authorized",
+      });
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+      where: {
+        id: workId,
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+          },
+        },
+        projects: true,
+      },
+    });
+    if (!workspace) {
+      return res.status(404).json({
+        error: "workspace not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "workplace data fetched",
+      data: workspace,
+    });
+  } catch (error) {
+    console.log("failure in fetching workspace data", error);
+    return res.status(500).json({ error: "failed fetching workspace data" });
+  }
+};
+
+export const deleteMember = async (req: Request, res: Response) => {
+  const user = req.user;
+  const userId = Number(req.params.userId);
+  const workId = Number(req.params.id);
+  try {
+    if (user.id === userId) {
+      return res.status(400).json({
+        error: "Cannot remove yourself",
+      });
+    }
+    const reqMembership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (
+      !reqMembership ||
+      (reqMembership.role !== "OWNER" && reqMembership.role !== "ADMIN")
+    ) {
+      return res.status(403).json({
+        error: "Not authorized",
+      });
+    }
+
+    const roles = {
+      OWNER: 3,
+      ADMIN: 2,
+      MEMBER: 1,
+    };
+    const delMember = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: userId,
+        },
+      },
+    });
+    if (!delMember) {
+      return res
+        .status(400)
+        .json({ error: "user does not exist in the workspace" });
+    }
+
+    if (roles[delMember.role] < roles[reqMembership.role]) {
+      const response = await prisma.workspaceMembers.delete({
+        where: {
+          workspaceId_userId: {
+            workspaceId: workId,
+            userId: userId,
+          },
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "member removed to workplace",
+        data: response,
+      });
+    }
+    return res.status(403).json({
+      error: "Cannot remove a member with equal or higher role",
+    });
+  } catch (error) {
+    console.log("failure in removing member from  workspace", error);
+    return res
+      .status(500)
+      .json({ error: "failed removing member from workspace" });
+  }
+};
+
 export const createProject = async (req: Request, res: Response) => {
   const { name, description } = req.body;
   const workId = Number(req.params.id);
