@@ -10,59 +10,97 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
 
-model User{
-    id            Int       @id @default(autoincrement())
-    email         String    @unique
-    name          String?
-    password      String
-    createdAt     DateTime  @default(now())
+  ownerWorkspaces      Workspace[]        @relation("WorkspaceOwner")
+  workspaceMemberships WorkspaceMembers[]
+  projects             Project[]          @relation("ProjectCreator")
 
-
-    ownerWorkspaces       Workspace[]         @relation("WorkspaceOwner")
-    workspaceMemberships  WorkspaceMembers[]
-    projects Project[]    @relation("ProjectCreator")
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignee")
 }
 
-model Workspace{
-    id            Int       @id @default(autoincrement())
-    name          String
-    ownerId       Int  
-    owner         User      @relation("WorkspaceOwner",fields :[ownerId], references: [id])
-    members       WorkspaceMembers[]
-    projects      Project[]
+model Workspace {
+  id       Int                @id @default(autoincrement())
+  name     String
+  ownerId  Int
+  owner    User               @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members  WorkspaceMembers[]
+  projects Project[]
 }
 
-model WorkspaceMembers{
-    @@id([workspaceId,userId]) 
-    workspaceId Int
-    userId      Int
-    role        Role          @default(MEMBER)
-    workspace   Workspace     @relation(fields  :[workspaceId],references: [id])
-    user        User          @relation(fields: [userId], references: [id])
+model WorkspaceMembers {
+  workspaceId Int
+  userId      Int
+  role        Role      @default(MEMBER)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@id([workspaceId, userId])
 }
 
-enum Role{
-    OWNER
-    ADMIN 
-    MEMBER
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
 }
 
-model Project{
-    id            Int             @id @default(autoincrement())
-    name          String 
-    description   String
-    status        ProjectStatus   @default(PLANNING)
-    workspaceId   Int 
-    workspace     Workspace       @relation(fields: [workspaceId], references :[id])
-    createdById   Int
-    createdBy     User            @relation("ProjectCreator",fields:[createdById],references:[id])
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  status      ProjectStatus @default(PLANNING)
+  workspaceId Int
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  createdById Int
+  createdBy   User          @relation("ProjectCreator", fields: [createdById], references: [id])
+
+  tasks Task[]
 }
 
-enum ProjectStatus{
-    PLANNING
-    ACTIVE
-    ON_HOLD
-    COMPLETED
-    ARCHIVED
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+model Task {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+
+  status   Status     @default(TODO)
+  priority TaskStatus @default(MEDIUM)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId   Int
+  createdById Int
+  assigneeId  Int?
+
+  project   Project @relation(fields: [projectId], references: [id])
+  createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee  User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum TaskStatus {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }

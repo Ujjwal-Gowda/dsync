@@ -1,0 +1,15 @@
+FROM node:24-alpine AS builder
+
+workdir /app
+
+copy packeg.json ./
+
+RUN npm ci 
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+
+

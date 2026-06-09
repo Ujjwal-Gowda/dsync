@@ -164,3 +164,124 @@ export const deleteProject = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "failed deleting project " });
   }
 };
+
+export const createTask = async (req: Request, res: Response) => {
+  const { title, description, priority, assignee } = req.body;
+  const projectId = Number(req.params.id);
+  const user = req.user;
+  try {
+    if (!title || !description || !priority || !projectId) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+    if (!project) {
+      return res.status(404).json({ error: "project not found" });
+    }
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: project.workspaceId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        error: "Not authorized",
+      });
+    }
+
+    // project name availability check
+    // const exists = await prisma.task.findFirst({
+    //   where: {
+    //     title: title,
+    //     projectId: project.id,
+    //   },
+    // });
+    //
+    // if (exists) {
+    //   return res.status(409).json({ error: "title already in use" });
+    // }
+    const task = await prisma.task.create({
+      data: {
+        title: title,
+        description: description,
+        priority: priority,
+        projectId: project.id,
+        createdById: user.id,
+        assigneeId: assignee ?? null,
+      },
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "task created",
+      data: task,
+    });
+  } catch (error) {
+    console.log("failure in creating project", error);
+    return res.status(500).json({ error: "failed adding task to project" });
+  }
+};
+
+export const fetchTask = async (req: Request, res: Response) => {
+  const projectId = Number(req.params.id);
+  const user = req.user;
+  try {
+    if (isNaN(projectId)) {
+      return res.status(400).json({ error: "missing project id" });
+    }
+
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+    });
+    if (!project) {
+      return res.status(404).json({ error: "project not found" });
+    }
+
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: project.workspaceId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        error: "Not authorized",
+      });
+    }
+    const tasks = await prisma.task.findMany({
+      where: {
+        projectId,
+      },
+      include: {
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "task fetched successfully",
+      data: tasks,
+    });
+  } catch (error) {
+    console.log("failure fetching tasks", error);
+    return res.status(500).json({ error: "failed fetching tasks" });
+  }
+};

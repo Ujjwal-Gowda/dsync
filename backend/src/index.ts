@@ -6,6 +6,7 @@ import helmet from "helmet";
 import authRoutes from "./routes/authroutes.ts";
 import workspacesRoutes from "./routes/workspaceRoutes.ts";
 import projectRoutes from "./routes/projectsRoutes.ts";
+import tasksRoutes from "./routes/tasksRoutes.ts";
 import prisma from "./config/prisma.ts";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -29,6 +30,7 @@ app.get("/api", (req, res) => {
     auth: "/auth",
     workspace: "/workspace",
     projects: "/projects",
+    tasks: "/tasks",
   });
 });
 
@@ -37,6 +39,8 @@ app.use("/auth", authRoutes);
 app.use("/workspaces", workspacesRoutes);
 
 app.use("/projects", projectRoutes);
+
+app.use("/tasks", tasksRoutes);
 
 app.listen(PORT, () => {
   console.log(`server running on port http://localhost:${PORT}`);
