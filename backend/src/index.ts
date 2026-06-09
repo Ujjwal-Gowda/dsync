@@ -4,6 +4,8 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import authRoutes from "./routes/authroutes.ts";
+import workspacesRoutes from "./routes/workspaceRoutes.ts";
+import projectRoutes from "./routes/projectsRoutes.ts";
 import prisma from "./config/prisma.ts";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -22,10 +24,19 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/api", (req, res) => {
-  res.json({ health: "/health", auth: "/auth" });
+  res.json({
+    health: "/health",
+    auth: "/auth",
+    workspace: "/workspace",
+    projects: "/projects",
+  });
 });
 
 app.use("/auth", authRoutes);
+
+app.use("/workspaces", workspacesRoutes);
+
+app.use("/projects", projectRoutes);
 
 app.listen(PORT, () => {
   console.log(`server running on port http://localhost:${PORT}`);

@@ -37,15 +37,15 @@ model WorkspaceMembers{
     @@id([workspaceId,userId]) 
     workspaceId Int
     userId      Int
-    role        Role          @default(Member)
+    role        Role          @default(MEMBER)
     workspace   Workspace     @relation(fields  :[workspaceId],references: [id])
     user        User          @relation(fields: [userId], references: [id])
 }
 
 enum Role{
-    Owner
-    Admin
-    Member
+    OWNER
+    ADMIN 
+    MEMBER
 }
 
 model Project{
