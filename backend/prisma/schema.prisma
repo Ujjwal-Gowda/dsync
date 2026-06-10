@@ -31,6 +31,7 @@ model Workspace {
   ownerId  Int
   owner    User               @relation("WorkspaceOwner", fields: [ownerId], references: [id])
   members  WorkspaceMembers[]
+  deletedAt DateTime?
   projects Project[]
 }
 
@@ -59,6 +60,7 @@ model Project {
   workspace   Workspace     @relation(fields: [workspaceId], references: [id])
   createdById Int
   createdBy   User          @relation("ProjectCreator", fields: [createdById], references: [id])
+  deletedAt   DateTime?
 
   tasks Task[]
 }
@@ -81,6 +83,7 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   projectId   Int
   createdById Int

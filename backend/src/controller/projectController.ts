@@ -150,8 +150,9 @@ export const deleteProject = async (req: Request, res: Response) => {
       });
     }
 
-    const deletedProject = await prisma.project.delete({
+    const deletedProject = await prisma.project.update({
       where: { id: projectId },
+      data: { deletedAt: new Date() },
     });
 
     return res.status(200).json({
