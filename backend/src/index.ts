@@ -6,6 +6,7 @@ import helmet from "helmet";
 import authRoutes from "./routes/authroutes.ts";
 import workspacesRoutes from "./routes/workspaceRoutes.ts";
 import projectsRoutes from "./routes/projectsRoutes.ts";
+import activityRoutes from "./routes/activityRoutes.ts";
 import tasksRoutes from "./routes/tasksRoutes.ts";
 import commentsRoutes from "./routes/commentsRoutes.ts";
 import prisma from "./config/prisma.ts";
@@ -45,6 +46,8 @@ app.use("/projects", projectsRoutes);
 app.use("/tasks", tasksRoutes);
 
 app.use("/comments", commentsRoutes);
+
+app.use("/activity", activityRoutes);
 
 app.listen(PORT, () => {
   console.log(`server running on port http://localhost:${PORT}`);

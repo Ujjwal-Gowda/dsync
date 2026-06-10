@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
-import { isUint8ClampedArray } from "node:util/types";
+import { createActivity } from "../services/acitvity.services.ts";
 
 export const createWorkspace = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -32,7 +32,6 @@ export const createWorkspace = async (req: Request, res: Response) => {
         role: "OWNER",
       },
     });
-
     return res.status(201).json({
       status: "success",
       message: "workspace created",
@@ -336,6 +335,12 @@ export const createProject = async (req: Request, res: Response) => {
       },
     });
 
+    await createActivity({
+      type: "PROJECT_CREATED",
+      workspaceId: workId,
+      userId: user.id,
+      projectId: project.id,
+    });
     return res.status(201).json({
       status: "success",
       message: "project added to workplace",

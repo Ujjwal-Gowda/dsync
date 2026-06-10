@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { ProjectStatus } from "../generated/prisma/enums.ts";
+import { createActivity } from "../services/acitvity.services.ts";
 
 export const updateProject = async (req: Request, res: Response) => {
   const { name, description, status } = req.body;
@@ -102,6 +103,13 @@ export const updateProject = async (req: Request, res: Response) => {
       data: updateData,
     });
 
+    await createActivity({
+      type: "PROJECT_UPDATED",
+      workspaceId: project.workspaceId,
+      userId: user.id,
+      projectId: project.id,
+    });
+
     return res.status(200).json({
       status: "success",
       message: "project updated",
@@ -155,6 +163,12 @@ export const deleteProject = async (req: Request, res: Response) => {
       data: { deletedAt: new Date() },
     });
 
+    await createActivity({
+      type: "PROJECT_DELETED",
+      workspaceId: project.workspaceId,
+      userId: user.id,
+      projectId: project.id,
+    });
     return res.status(200).json({
       status: "success",
       message: "project deleted",
@@ -219,14 +233,22 @@ export const createTask = async (req: Request, res: Response) => {
       },
     });
 
+    await createActivity({
+      type: "TASK_CREATED",
+      workspaceId: project.workspaceId,
+      userId: user.id,
+      taskId: task.id,
+      projectId: project.id,
+    });
+
     return res.status(201).json({
       status: "success",
       message: "task created",
       data: task,
     });
   } catch (error) {
-    console.log("failure in creating project", error);
-    return res.status(500).json({ error: "failed adding task to project" });
+    console.log("failure in creating task", error);
+    return res.status(500).json({ error: "failed creating task" });
   }
 };
 

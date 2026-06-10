@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
+import { createActivity } from "../services/acitvity.services.ts";
 
 export const deleteComment = async (req: Request, res: Response) => {
   const commentId = Number(req.params.id);
@@ -58,6 +59,13 @@ export const deleteComment = async (req: Request, res: Response) => {
       data: {
         deletedAt: new Date(),
       },
+    });
+
+    await createActivity({
+      type: "COMMENT_DELETED",
+      workspaceId: comment.task.project.workspaceId,
+      userId: user.id,
+      taskId: comment.taskId,
     });
 
     return res.status(200).json({
@@ -133,6 +141,12 @@ export const updateComment = async (req: Request, res: Response) => {
       },
     });
 
+    await createActivity({
+      type: "COMMENT_UPDATED",
+      workspaceId: comment.task.project.workspaceId,
+      userId: user.id,
+      taskId: comment.taskId,
+    });
     return res.status(200).json({
       status: "success",
       message: "comment updated",

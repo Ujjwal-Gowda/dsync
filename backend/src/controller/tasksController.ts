@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { Priority } from "../generated/prisma/enums.ts";
+import { createActivity } from "../services/acitvity.services.ts";
 
 export const updateTask = async (req: Request, res: Response) => {
   const { title, description, priority, assignee } = req.body;
@@ -92,6 +93,14 @@ export const updateTask = async (req: Request, res: Response) => {
       data: updateData,
     });
 
+    await createActivity({
+      type: "TASK_UPDATED",
+      workspaceId: tasks.project.workspaceId,
+      userId: user.id,
+      taskId: task.id,
+      projectId: task.projectId,
+    });
+
     return res.status(200).json({
       status: "success",
       message: "task updated",
@@ -153,6 +162,14 @@ export const deleteTask = async (req: Request, res: Response) => {
       data: {
         deletedAt: new Date(),
       },
+    });
+
+    await createActivity({
+      type: "TASK_DELETED",
+      workspaceId: tasks.project.workspaceId,
+      userId: user.id,
+      taskId: task.id,
+      projectId: task.projectId,
     });
 
     return res.status(200).json({
@@ -228,6 +245,13 @@ export const updateStatus = async (req: Request, res: Response) => {
       data: { status },
     });
 
+    await createActivity({
+      type: "TASK_STATUS_CHANGED",
+      workspaceId: tasks.project.workspaceId,
+      userId: user.id,
+      taskId: task.id,
+      projectId: task.projectId,
+    });
     return res.status(200).json({
       status: "success",
       message: "status updated",
@@ -294,6 +318,14 @@ export const createComment = async (req: Request, res: Response) => {
         taskId: taskId,
         userId: user.id,
       },
+    });
+
+    await createActivity({
+      type: "COMMENT_CREATED",
+      workspaceId: task.project.workspaceId,
+      userId: user.id,
+      taskId: task.id,
+      projectId: task.projectId,
     });
 
     return res.status(201).json({
