@@ -5,8 +5,9 @@ import morgan from "morgan";
 import helmet from "helmet";
 import authRoutes from "./routes/authroutes.ts";
 import workspacesRoutes from "./routes/workspaceRoutes.ts";
-import projectRoutes from "./routes/projectsRoutes.ts";
+import projectsRoutes from "./routes/projectsRoutes.ts";
 import tasksRoutes from "./routes/tasksRoutes.ts";
+import commentsRoutes from "./routes/commentsRoutes.ts";
 import prisma from "./config/prisma.ts";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -28,9 +29,10 @@ app.get("/api", (req, res) => {
   res.json({
     health: "/health",
     auth: "/auth",
-    workspace: "/workspace",
+    workspace: "/workspaces",
     projects: "/projects",
     tasks: "/tasks",
+    comment: "/comments",
   });
 });
 
@@ -38,9 +40,11 @@ app.use("/auth", authRoutes);
 
 app.use("/workspaces", workspacesRoutes);
 
-app.use("/projects", projectRoutes);
+app.use("/projects", projectsRoutes);
 
 app.use("/tasks", tasksRoutes);
+
+app.use("/comments", commentsRoutes);
 
 app.listen(PORT, () => {
   console.log(`server running on port http://localhost:${PORT}`);
@@ -55,3 +59,6 @@ async function connectPrisma() {
     console.log("database disconnected", error);
   }
 }
+// POST /tasks/:id/comments
+// GET  /tasks/:id/comments
+// DELETE /comments/:id

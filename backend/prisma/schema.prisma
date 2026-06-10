@@ -23,6 +23,8 @@ model User {
 
   createdTasks  Task[] @relation("TaskCreator")
   assignedTasks Task[] @relation("TaskAssignee")
+
+  comments Comment[] @relation("commentor")
 }
 
 model Workspace {
@@ -76,10 +78,10 @@ enum ProjectStatus {
 model Task {
   id          Int    @id @default(autoincrement())
   title       String
-  description String
+  description String?
 
   status   Status     @default(TODO)
-  priority TaskStatus @default(MEDIUM)
+  priority Priority @default(MEDIUM)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,6 +94,8 @@ model Task {
   project   Project @relation(fields: [projectId], references: [id])
   createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
   assignee  User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  comments Comment[] @relation("taskscomment")
 }
 
 enum Status {
@@ -101,9 +105,24 @@ enum Status {
   DONE
 }
 
-enum TaskStatus {
+enum Priority{
   LOW
   MEDIUM
   HIGH
   URGENT
 }
+
+model Comment{
+    id Int @id @default(autoincrement())
+    content String 
+    taskId Int 
+    userId Int
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    deletedAt DateTime?
+
+    task Task  @relation("taskscomment",fields:[taskId], references :[id], onDelete:Cascade)
+    user User  @relation("commentor",fields:[userId],references:[id], onDelete:Cascade)
+
+  }
