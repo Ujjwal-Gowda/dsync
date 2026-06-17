@@ -8,7 +8,7 @@ import {
 } from "../controller/projectController";
 const router = Router();
 
-router.patch("/projects/:id", protectRoute, updateProject);
+router.patch("/:id", protectRoute, updateProject);
 router.delete("/:id", protectRoute, deleteProject);
 router.post("/:id/task", protectRoute, createTask);
 router.get("/:id/tasks", protectRoute, fetchTask);

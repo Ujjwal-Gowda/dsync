@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
-import { ProjectStatus } from "../generated/prisma/enums.ts";
+import { Priority, ProjectStatus, Status } from "../generated/prisma/enums.ts";
 import { createActivity } from "../services/acitvity.services.ts";
+import { Prisma } from "@prisma/client/extension";
+import { title } from "node:process";
 
 export const updateProject = async (req: Request, res: Response) => {
   const { name, description, status } = req.body;
@@ -41,18 +43,6 @@ export const updateProject = async (req: Request, res: Response) => {
       return res.status(403).json({
         error: "Not authorized",
       });
-    }
-
-    // project name availability check
-    const priorProj = await prisma.project.findFirst({
-      where: {
-        name: name,
-        workspaceId: project.workspaceId,
-      },
-    });
-
-    if (priorProj) {
-      return res.status(409).json({ error: "name already in use" });
     }
 
     const updateData: {
@@ -255,6 +245,15 @@ export const createTask = async (req: Request, res: Response) => {
 export const fetchTask = async (req: Request, res: Response) => {
   const projectId = Number(req.params.id);
   const user = req.user;
+  const { status, priority, assigneeId, sortBy, order, search } = req.query;
+  const page = Number(req.query.page) || 1;
+
+  const limit = Number(req.query.limit) || 10;
+
+  const skip = (page - 1) * limit;
+  // const assigneeId = Number(req.query.assigneeId);
+  // const page = Number(req.query.page);
+  // const limit = Number(req.query.limit);
   try {
     if (isNaN(projectId)) {
       return res.status(400).json({ error: "missing project id" });
@@ -283,10 +282,63 @@ export const fetchTask = async (req: Request, res: Response) => {
         error: "Not authorized",
       });
     }
+
+    const filter: Prisma.TaskWhereInput = {
+      projectId,
+    };
+
+    if (status) {
+      filter.status = status as Status;
+    }
+
+    if (priority) {
+      filter.priority = priority as Priority;
+    }
+
+    if (assigneeId) {
+      filter.assigneeId = Number(assigneeId);
+    }
+
+    if (search) {
+      filter.OR = [
+        {
+          title: {
+            contains: String(search),
+            mode: "insensitive",
+          },
+        },
+        {
+          description: {
+            contains: String(search),
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
+    const allowedSortFields = [
+      "createdAt",
+      "updatedAt",
+      "priority",
+      "status",
+      "title",
+    ];
+
+    if (sortBy && !allowedSortFields.includes(String(sortBy))) {
+      return res.status(400).json({
+        error: "invalid sort field",
+      });
+    }
+
+    const orderBy = sortBy
+      ? { [String(sortBy)]: order === "asc" ? "asc" : "desc" }
+      : { createdAt: "desc" };
+
     const tasks = await prisma.task.findMany({
-      where: {
-        projectId,
-      },
+      where: filter,
+      orderBy,
+      skip,
+      take: limit,
       include: {
         assignee: {
           select: {
@@ -301,6 +353,9 @@ export const fetchTask = async (req: Request, res: Response) => {
     return res.status(200).json({
       status: "success",
       message: "task fetched successfully",
+      page,
+      limit,
+      count: tasks.length,
       data: tasks,
     });
   } catch (error) {
