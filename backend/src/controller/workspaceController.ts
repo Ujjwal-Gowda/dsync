@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { createActivity } from "../services/acitvity.services.ts";
+import { ProjectStatus } from "../generated/prisma/enums.ts";
 
 export const createWorkspace = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -77,6 +78,79 @@ export const fetchWorkspace = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("failure in fetching workspace");
     res.status(500).json({ error: "failed fetching workspace" });
+  }
+};
+
+export const fetchStats = async (req: Request, res: Response) => {
+  const user = req.user;
+  const workId = Number(req.params.id);
+  try {
+    if (isNaN(workId)) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const membership = await prisma.workspace.findUnique({
+      where: {
+        id: workId,
+      },
+    });
+
+    if (!membership) {
+      return res.status(404).json({
+        error: "workspace not found",
+      });
+    }
+
+    const [projects, members, tasks, statusCounts] = await Promise.all([
+      prisma.project.count({
+        where: {
+          workspaceId: workId,
+        },
+      }),
+
+      prisma.workspaceMembers.count({
+        where: {
+          workspaceId: workId,
+        },
+      }),
+      prisma.task.count({
+        where: {
+          project: {
+            workspaceId: workId,
+          },
+        },
+      }),
+      prisma.task.groupBy({
+        by: ["status"],
+        where: {
+          project: {
+            workspaceId: workId,
+          },
+        },
+        _count: true,
+      }),
+    ]);
+
+    const taskStatusBreakdown = statusCounts.reduce(
+      (acc, item) => {
+        acc[item.status] = item._count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    return res.status(200).json({
+      status: "success",
+      message: "workspace stats fetched ",
+      projects: projects,
+      members: members,
+      tasks: tasks,
+      statusCounts: taskStatusBreakdown,
+    });
+  } catch (error) {
+    console.log("failure in fetching workspace stats");
+    res.status(500).json({ error: "failed fetching workspace stats" });
   }
 };
 
@@ -359,15 +433,25 @@ export const fetchProject = async (req: Request, res: Response) => {
   const user = req.user;
   const { status, search } = req.query;
   const page = Number(req.query.page) || 1;
-
   const limit = Number(req.query.limit) || 10;
 
   const skip = (page - 1) * limit;
   try {
     // input validation
-    if (!workId) {
+    if (isNaN(workId)) {
       return res.status(400).json({
         error: "Missing required fields",
+      });
+    }
+    const workspace = await prisma.workspace.findUnique({
+      where: {
+        id: workId,
+      },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({
+        error: "workspace not found",
       });
     }
     // requester authorization check
@@ -385,30 +469,113 @@ export const fetchProject = async (req: Request, res: Response) => {
         error: "Not authorized",
       });
     }
+    const filter: Prisma.ProjectWhereInput = {
+      workspaceId: workId,
+    };
 
-    // workspace fetch
-    const workspace = await prisma.workspace.findUnique({
-      where: {
-        id: workId,
-      },
-      include: {
-        projects: true,
-      },
+    if (status) {
+      filter.status = status as ProjectStatus;
+    }
+
+    if (search) {
+      filter.OR = [
+        { name: { contains: String(search), mode: "insensitive" } },
+        { description: { contains: String(search), mode: "insensitive" } },
+      ];
+    }
+    const projects = await prisma.project.findMany({
+      where: filter,
+      skip,
+      take: limit,
     });
 
-    if (!workspace) {
-      return res.status(404).json({ error: "workspace not found" });
+    const total = await prisma.project.count({
+      where: filter,
+    });
+
+    if (!projects) {
+      return res.status(404).json({ error: "projects not found" });
     }
 
     return res.status(200).json({
       status: "success",
-      message: "projects fetched from workplace",
-      data: workspace.projects,
+      count: projects.length,
+      total,
+      totalPages: Math.ceil(total / limit),
+      page,
+      data: projects,
     });
   } catch (error) {
     console.log("failure in fetching projects from  workspace", error);
     return res
       .status(500)
       .json({ error: "failed to fetch projects from workspace" });
+  }
+};
+
+export const projStats = async (req: Request, res: Response) => {
+  const user = req.user;
+  const projectId = Number(req.params.id);
+  try {
+    if (isNaN(projectId)) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+    });
+    if (!project) {
+      return res.status(404).json({ error: "project not found" });
+    }
+
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: project.workspaceId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return res.status(403).json({
+        error: "Not authorized",
+      });
+    }
+
+    const tasks = await prisma.task.count({
+      where: {
+        projectId,
+      },
+    });
+    const statusCounts = await prisma.task.groupBy({
+      by: ["status"],
+      where: {
+        project: {
+          id: projectId,
+        },
+      },
+      _count: true,
+    });
+    const taskStatusBreakdown = statusCounts.reduce(
+      (acc, item) => {
+        acc[item.status] = item._count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    return res.status(200).json({
+      status: "success",
+      message: "project stats fetched ",
+      tasks: tasks,
+      statusCounts: taskStatusBreakdown,
+    });
+  } catch (error) {
+    console.log("failure in fetching project stats");
+    res.status(500).json({ error: "failed fetching project stats" });
   }
 };

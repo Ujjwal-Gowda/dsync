@@ -8,12 +8,16 @@ import {
   deleteMember,
   createProject,
   fetchProject,
+  fetchStats,
+  projStats,
 } from "../controller/workspaceController";
 const router = Router();
 
 router.post("/", protectRoute, createWorkspace);
 
 router.get("/", protectRoute, fetchWorkspace);
+
+router.get("/:id/stats", protectRoute, fetchStats);
 
 router.post("/:id/members", protectRoute, addMember);
 
@@ -24,5 +28,7 @@ router.delete("/:id/members/:userId", protectRoute, deleteMember);
 router.post("/:id/projects", protectRoute, createProject);
 
 router.get("/:id/projects", protectRoute, fetchProject);
+
+router.get("/:id/projstats", protectRoute, projStats);
 
 export default router;
