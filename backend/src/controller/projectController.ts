@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { Priority, ProjectStatus, Status } from "../generated/prisma/enums.ts";
 import { createActivity } from "../services/acitvity.services.ts";

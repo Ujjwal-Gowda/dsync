@@ -2,13 +2,19 @@ FROM node:24-alpine AS builder
 
 workdir /app
 
-copy packeg.json ./
+copy package*.json ./
 
 RUN npm ci 
 
+COPY prisma ./prisma/
+
+RUN npx prisma generate
+
 COPY . .
 
-EXPOSE 3000
+RUN npm run build
+
+EXPOSE 5000
 
 CMD ["npm", "start"]
 

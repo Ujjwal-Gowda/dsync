@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { createActivity } from "../services/acitvity.services.ts";
 import { ProjectStatus } from "../generated/prisma/enums.ts";
@@ -555,9 +555,7 @@ export const projStats = async (req: Request, res: Response) => {
     const statusCounts = await prisma.task.groupBy({
       by: ["status"],
       where: {
-        project: {
-          id: projectId,
-        },
+        projectId,
       },
       _count: true,
     });
