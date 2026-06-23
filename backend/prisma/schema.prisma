@@ -60,14 +60,15 @@ model Project {
   name        String
   description String
   status      ProjectStatus @default(PLANNING)
-  workspaceId Int
+  workspaceId Int           
   workspace   Workspace     @relation(fields: [workspaceId], references: [id])
   createdById Int
   createdBy   User          @relation("ProjectCreator", fields: [createdById], references: [id])
   deletedAt   DateTime?
 
-  tasks Task[]
+  tasks Task[]            @relation("TaskCreator")
   activity  Activity[]    @relation("projectact")
+  @@index([workspaceId])
 }
 
 enum ProjectStatus {
@@ -94,12 +95,16 @@ model Task {
   createdById Int
   assigneeId  Int?
 
-  project   Project @relation(fields: [projectId], references: [id])
+  project   Project @relation( "TaskCreator",fields: [projectId], references: [id],onDelete:Cascade)
   createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
   assignee  User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
 
   comments Comment[] @relation("taskscomment")
   activity  Activity[]     @relation("taskact")
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
 }
 
 enum Status {
@@ -149,6 +154,10 @@ model Activity{
     user      User      @relation("useract",fields: [userId], references: [id])
     task       Task?    @relation("taskact",fields: [taskId], references: [id])
     project    Project? @relation("projectact",fields: [projectId], references: [id])
+
+    @@index([workspaceId])
+    @@index([userId])
+    @@index([createdAt])
 }
 enum ActivityType {
     TASK_CREATED
