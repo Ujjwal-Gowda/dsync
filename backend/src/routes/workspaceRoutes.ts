@@ -1,15 +1,15 @@
 import { Router } from "express";
 import { protectRoute } from "../middleware/auth";
 import {
-  createWorkspace,
-  fetchWorkspace,
-  addMember,
-  getMember,
-  deleteMember,
-  createProject,
-  fetchProject,
-  fetchStats,
-  projStats,
+    createWorkspace,
+    fetchWorkspace,
+    addMember,
+    getMember,
+    deleteMember,
+    createProject,
+    fetchProject,
+    fetchStats,
+    projStats
 } from "../controller/workspaceController";
 const router = Router();
 

@@ -23,21 +23,23 @@ app.use(cookieParser());
 const PORT = process.env.PORT;
 
 app.get("/health", (req, res) => {
-  res.json({ message: "healthy" });
+    res.json({ message: "healthy" });
 });
 
 app.get("/api", (req, res) => {
-  res.json({
-    health: "/health",
-    auth: "/auth",
-    workspace: "/workspaces",
-    projects: "/projects",
-    tasks: "/tasks",
-    comment: "/comments",
-  });
+    res.json({
+        health: "/health",
+        auth: "/auth",
+        workspace: "/workspaces",
+        projects: "/projects",
+        tasks: "/tasks",
+        comment: "/comments",
+    });
 });
 
 app.use("/auth", authRoutes);
+
+app.use("/me", authRoutes);
 
 app.use("/workspaces", workspacesRoutes);
 
@@ -50,18 +52,17 @@ app.use("/comments", commentsRoutes);
 app.use("/activity", activityRoutes);
 
 app.listen(PORT, () => {
-  console.log(`server running on port http://localhost:${PORT}`);
+    console.log(`server running on port http://localhost:${PORT}`);
 });
 
 async function connectPrisma() {
-  try {
-    const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} ;`;
+    try {
+        const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} ;`;
 
-    console.log("database connected", result);
-  } catch (error) {
-    console.log("database disconnected", error);
-  }
+        console.log("database connected", result);
+    } catch (error) {
+        console.log("database disconnected", error);
+    }
 }
 // POST /tasks/:id/comments
 // GET  /tasks/:id/comments
-// DELETE /comments/:id
