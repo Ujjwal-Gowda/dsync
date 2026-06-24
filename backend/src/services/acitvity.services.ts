@@ -16,6 +16,13 @@ export const createActivity = async ({
   metadata?: any;
 }) => {
   return await prisma.activity.create({
-    data: { type, workspaceId, userId, taskId, projectId, metadata },
+    data: {
+      type,
+      workspaceId,
+      userId,
+      taskId: taskId ?? null,
+      projectId: projectId ?? null,
+      metadata,
+    },
   });
 };

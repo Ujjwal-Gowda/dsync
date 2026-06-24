@@ -4,8 +4,8 @@ import {
   loginUser,
   logout,
   userInfo,
-} from "../controller/authController";
-import { protectRoute } from "../middleware/auth";
+} from "../controller/authController.ts";
+import { protectRoute } from "../middleware/auth.ts";
 const router = express.Router();
 
 router.post("/register", registerUser);

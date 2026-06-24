@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { protectRoute } from "../middleware/auth";
+import { protectRoute } from "../middleware/auth.ts";
 import {
   updateProject,
   deleteProject,
   createTask,
   fetchTask,
-} from "../controller/projectController";
+} from "../controller/projectController.ts";
 const router = Router();
 
 router.patch("/:id", protectRoute, updateProject);

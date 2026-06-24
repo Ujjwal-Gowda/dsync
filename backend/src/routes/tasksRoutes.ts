@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { protectRoute } from "../middleware/auth";
+import { protectRoute } from "../middleware/auth.ts";
 import {
   updateTask,
   deleteTask,
   updateStatus,
   createComment,
   fetchComments,
-} from "../controller/tasksController";
+} from "../controller/tasksController.ts";
 const router = Router();
 
 router.patch("/:id", protectRoute, updateTask);

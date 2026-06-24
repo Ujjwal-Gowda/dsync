@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { protectRoute } from "../middleware/auth";
+import { protectRoute } from "../middleware/auth.ts";
 import {
     createWorkspace,
     fetchWorkspace,
@@ -10,7 +10,7 @@ import {
     fetchProject,
     fetchStats,
     projStats
-} from "../controller/workspaceController";
+} from "../controller/workspaceController.ts";
 const router = Router();
 
 router.post("/", protectRoute, createWorkspace);

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { protectRoute } from "../middleware/auth";
-import { deleteComment, updateComment } from "../controller/commentController";
+import { protectRoute } from "../middleware/auth.ts";
+import { deleteComment, updateComment } from "../controller/commentController.ts";
 const router = Router();
 
 router.delete("/:id", protectRoute, deleteComment);

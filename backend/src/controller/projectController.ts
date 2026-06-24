@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { Priority, ProjectStatus, Status } from "../generated/prisma/enums.ts";
 import { createActivity } from "../services/acitvity.services.ts";
-import { Prisma } from "@prisma/client/extension";
+import { Prisma } from "../generated/prisma/client.ts";
 import { title } from "node:process";
 
 export const updateProject = async (req: Request, res: Response) => {
@@ -285,6 +285,7 @@ export const fetchTask = async (req: Request, res: Response) => {
 
     const filter: Prisma.TaskWhereInput = {
       projectId,
+      deletedAt: null,
     };
 
     if (status) {
@@ -330,7 +331,7 @@ export const fetchTask = async (req: Request, res: Response) => {
       });
     }
 
-    const orderBy = sortBy
+    const orderBy: any = sortBy
       ? { [String(sortBy)]: order === "asc" ? "asc" : "desc" }
       : { createdAt: "desc" };
 

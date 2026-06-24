@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import prisma from "../config/prisma.ts";
 import { createActivity } from "../services/acitvity.services.ts";
 import { ProjectStatus } from "../generated/prisma/enums.ts";
+import { Prisma } from "../generated/prisma/client.ts";
 
 export const createWorkspace = async (req: Request, res: Response) => {
   const { name } = req.body;
@@ -64,7 +65,7 @@ export const fetchWorkspace = async (req: Request, res: Response) => {
         message: "User not found",
       });
     }
-    const workspaces = fetchedUser.workspaceMemberships.map((membership) => ({
+    const workspaces = fetchedUser.workspaceMemberships.map((membership: any) => ({
       role: membership.role,
       workspaces: membership.workspace,
     }));
@@ -107,6 +108,7 @@ export const fetchStats = async (req: Request, res: Response) => {
       prisma.project.count({
         where: {
           workspaceId: workId,
+          deletedAt: null,
         },
       }),
 
@@ -119,7 +121,9 @@ export const fetchStats = async (req: Request, res: Response) => {
         where: {
           project: {
             workspaceId: workId,
+            deletedAt: null,
           },
+          deletedAt: null,
         },
       }),
       prisma.task.groupBy({
@@ -127,14 +131,16 @@ export const fetchStats = async (req: Request, res: Response) => {
         where: {
           project: {
             workspaceId: workId,
+            deletedAt: null,
           },
+          deletedAt: null,
         },
         _count: true,
       }),
     ]);
 
     const taskStatusBreakdown = statusCounts.reduce(
-      (acc, item) => {
+      (acc: Record<string, number>, item: any) => {
         acc[item.status] = item._count;
         return acc;
       },
@@ -264,7 +270,11 @@ export const getMember = async (req: Request, res: Response) => {
             user: true,
           },
         },
-        projects: true,
+        projects: {
+          where: {
+            deletedAt: null,
+          },
+        },
       },
     });
     if (!workspace) {
@@ -331,7 +341,7 @@ export const deleteMember = async (req: Request, res: Response) => {
         .json({ error: "user does not exist in the workspace" });
     }
 
-    if (roles[delMember.role] < roles[reqMembership.role]) {
+    if (roles[delMember.role as keyof typeof roles] < roles[reqMembership.role as keyof typeof roles]) {
       const response = await prisma.workspaceMembers.delete({
         where: {
           workspaceId_userId: {
@@ -471,6 +481,7 @@ export const fetchProject = async (req: Request, res: Response) => {
     }
     const filter: Prisma.ProjectWhereInput = {
       workspaceId: workId,
+      deletedAt: null,
     };
 
     if (status) {
@@ -550,17 +561,19 @@ export const projStats = async (req: Request, res: Response) => {
     const tasks = await prisma.task.count({
       where: {
         projectId,
+        deletedAt: null,
       },
     });
     const statusCounts = await prisma.task.groupBy({
       by: ["status"],
       where: {
         projectId,
+        deletedAt: null,
       },
       _count: true,
     });
     const taskStatusBreakdown = statusCounts.reduce(
-      (acc, item) => {
+      (acc: Record<string, number>, item: any) => {
         acc[item.status] = item._count;
         return acc;
       },

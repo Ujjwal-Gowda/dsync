@@ -1,4 +1,4 @@
-import prisma from "../config/prisma";
+import prisma from "../config/prisma.ts";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const secretkey = process.env.JWT_SECRET;
+const secretkey = process.env.JWT_SECRET as string;
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -114,7 +114,7 @@ function generateToken(user: any) {
         email: user?.email,
     };
 
-    const options = {
+    const options: any = {
         expiresIn: "1h",
     };
 

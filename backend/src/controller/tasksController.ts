@@ -53,7 +53,7 @@ export const updateTask = async (req: Request, res: Response) => {
       title?: string;
       description?: string;
       priority?: Priority;
-      assigneeId?: number;
+      assigneeId?: number | null;
     } = {};
 
     if (title) updateData.title = title;

@@ -6,7 +6,7 @@ dotenv.config();
 
 const secretkey = process.env.JWT_SECRET as string;
 
-export const protectRoute = (req: Request, res: Response, next) => {
+export const protectRoute = (req: Request, res: Response, next: any) => {
   const token = req.cookies?.token;
 
   if (!token) {
