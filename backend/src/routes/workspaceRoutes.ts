@@ -9,13 +9,22 @@ import {
     createProject,
     fetchProject,
     fetchStats,
-    projStats
+    projStats,
+    getWorkspaceById,
+    updateWorkspace,
+    deleteWorkspace
 } from "../controller/workspaceController.ts";
 const router = Router();
 
 router.post("/", protectRoute, createWorkspace);
 
 router.get("/", protectRoute, fetchWorkspace);
+
+router.get("/:id", protectRoute, getWorkspaceById);
+
+router.patch("/:id", protectRoute, updateWorkspace);
+
+router.delete("/:id", protectRoute, deleteWorkspace);
 
 router.get("/:id/stats", protectRoute, fetchStats);
 

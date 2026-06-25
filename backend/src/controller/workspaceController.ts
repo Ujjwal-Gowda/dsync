@@ -590,3 +590,122 @@ export const projStats = async (req: Request, res: Response) => {
     res.status(500).json({ error: "failed fetching project stats" });
   }
 };
+
+export const getWorkspaceById = async (req: Request, res: Response) => {
+  const workId = Number(req.params.id);
+  const user = req.user;
+  try {
+    if (isNaN(workId)) {
+      return res.status(400).json({ error: "Invalid workspace id" });
+    }
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        id: workId,
+        deletedAt: null,
+      },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({ error: "Workspace not found" });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      data: workspace,
+    });
+  } catch (error) {
+    console.log("Error fetching workspace by id", error);
+    return res.status(500).json({ error: "failed fetching workspace" });
+  }
+};
+
+export const updateWorkspace = async (req: Request, res: Response) => {
+  const workId = Number(req.params.id);
+  const { name } = req.body;
+  const user = req.user;
+  try {
+    if (isNaN(workId)) {
+      return res.status(400).json({ error: "Invalid workspace id" });
+    }
+    if (!name?.trim()) {
+      return res.status(400).json({ error: "Name is required to update" });
+    }
+
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== "OWNER" && membership.role !== "ADMIN")) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const updatedWorkspace = await prisma.workspace.update({
+      where: { id: workId },
+      data: { name: name.trim() },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Workspace updated",
+      data: updatedWorkspace,
+    });
+  } catch (error) {
+    console.log("Error updating workspace", error);
+    return res.status(500).json({ error: "failed updating workspace" });
+  }
+};
+
+export const deleteWorkspace = async (req: Request, res: Response) => {
+  const workId = Number(req.params.id);
+  const user = req.user;
+  try {
+    if (isNaN(workId)) {
+      return res.status(400).json({ error: "Invalid workspace id" });
+    }
+
+    const membership = await prisma.workspaceMembers.findUnique({
+      where: {
+        workspaceId_userId: {
+          workspaceId: workId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!membership || membership.role !== "OWNER") {
+      return res.status(403).json({ error: "Not authorized. Only the owner can delete this workspace." });
+    }
+
+    const deletedWorkspace = await prisma.workspace.update({
+      where: { id: workId },
+      data: { deletedAt: new Date() },
+    });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Workspace deleted",
+      data: deletedWorkspace,
+    });
+  } catch (error) {
+    console.log("Error deleting workspace", error);
+    return res.status(500).json({ error: "failed deleting workspace" });
+  }
+};

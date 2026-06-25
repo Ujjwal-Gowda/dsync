@@ -56,3 +56,13 @@ export async function fetchProjectsStats(projId: number) {
         throw error
     }
 }
+
+export async function getProject(projId: number) {
+    try {
+        const response = await api.get(`/projects/${projId}`)
+        return response.data
+    } catch (error) {
+        console.log("error fetching project by id", error)
+        throw error
+    }
+}

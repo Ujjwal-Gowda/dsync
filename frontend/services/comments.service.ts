@@ -20,7 +20,7 @@ export async function fetchComment(taskId: number) {
     }
 }
 
-export async function updateComment(commentId: number, content: string,) {
+export async function updateComment(commentId: number, content: string) {
     try {
         const response = await api.patch(`/comments/${commentId}`, { content })
         return response.data

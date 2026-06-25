@@ -6,9 +6,11 @@ import {
   updateStatus,
   createComment,
   fetchComments,
+  getTaskById,
 } from "../controller/tasksController.ts";
 const router = Router();
 
+router.get("/:id", protectRoute, getTaskById);
 router.patch("/:id", protectRoute, updateTask);
 router.delete("/:id", protectRoute, deleteTask);
 router.patch("/:id/status", protectRoute, updateStatus);

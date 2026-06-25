@@ -60,3 +60,13 @@ export async function updateTaskStatus(projId: number, status: Status) {
         throw error
     }
 }
+
+export async function getTask(taskId: number) {
+    try {
+        const response = await api.get(`/tasks/${taskId}`)
+        return response.data
+    } catch (error) {
+        console.log("error fetching task by id", error)
+        throw error
+    }
+}

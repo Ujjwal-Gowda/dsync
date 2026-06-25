@@ -64,6 +64,36 @@ export async function deleteWorkspacesMember(workId: number, userId: number) {
     }
 }
 
+export async function getWorkspace(workId: number) {
+    try {
+        const response = await api.get(`/workspaces/${workId}`)
+        return response.data
+    } catch (error) {
+        console.log("error fetching workspace by id", error)
+        throw error
+    }
+}
+
+export async function updateWorkspace(workId: number, name: string) {
+    try {
+        const response = await api.patch(`/workspaces/${workId}`, { name })
+        return response.data
+    } catch (error) {
+        console.log("error updating workspace name", error)
+        throw error
+    }
+}
+
+export async function deleteWorkspace(workId: number) {
+    try {
+        const response = await api.delete(`/workspaces/${workId}`)
+        return response.data
+    } catch (error) {
+        console.log("error deleting workspace", error)
+        throw error
+    }
+}
+
 
 
 

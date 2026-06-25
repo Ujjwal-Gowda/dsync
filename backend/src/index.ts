@@ -15,7 +15,10 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000", // Replace with your exact frontend URL/port if different
+    credentials: true
+}));
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
@@ -34,6 +37,7 @@ app.get("/api", (req, res) => {
         projects: "/projects",
         tasks: "/tasks",
         comment: "/comments",
+        activity: "/activity"
     });
 });
 
