@@ -1,285 +1,309 @@
 'use client'
 
-import type { Role, Workspace } from "@/types/user";
 import useWorkspace from "@/hooks/useWorkspace";
 import CurrentUser from "@/hooks/currentUser";
 import { useState } from "react";
 import Link from "next/link";
 import { 
   Briefcase, 
-  Users, 
-  Clock, 
-  Plus, 
   FolderKanban, 
+  CheckSquare, 
+  CheckCircle2, 
   Activity, 
-  ShieldAlert,
+  Plus, 
+  Calendar,
+  AlertTriangle,
+  Clock,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Inbox
 } from "lucide-react";
-
-export interface WorkSpaceItem {
-    role: Role,
-    workspaces: Workspace
-}
+import { Card } from "@/components/ui/card";
+import { StatsCard, TimelineItem } from "@/components/ui/shared";
+import { Dialog } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Dashboard() {
     const { data: workspaces, isLoading, error } = useWorkspace();
     const { data: user } = CurrentUser();
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    
+    // Quick Action Form Modal states
+    const [createWorkOpen, setCreateWorkOpen] = useState(false);
+    const [createProjOpen, setCreateProjOpen] = useState(false);
+    const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
     if (isLoading) {
         return (
-            <div className="flex h-[80vh] items-center justify-center">
+            <div className="flex h-[80vh] items-center justify-center bg-slate-900">
                 <div className="flex flex-col items-center gap-3">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-                    <p className="text-slate-400 text-xs font-medium">Fetching dashboard info...</p>
+                    <p className="text-slate-400 text-xs font-semibold">Gathering dashboard analytics...</p>
                 </div>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <div className="p-8 max-w-2xl mx-auto mt-10">
-                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-300 p-6 rounded-2xl flex flex-col items-center text-center gap-4">
-                    <ShieldAlert className="h-10 w-10 text-rose-400" />
-                    <div>
-                        <h3 className="font-bold text-lg text-white">Failed to Load Dashboard</h3>
-                        <p className="text-sm mt-1 text-rose-300/80">{error.message}</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const list = workspaces?.data || [];
 
-    const list: WorkSpaceItem[] = workspaces?.data || [];
+    // Simulated task datasets
+    const upcomingTasks = {
+        today: [
+            { id: 1, title: "Resolve schema relations migration", project: "Database Core" },
+            { id: 2, title: "Flesh out linear-styled task specs", project: "Client Web" }
+        ],
+        tomorrow: [
+            { id: 3, title: "Draft fake pricing tiers", project: "Billing Module" }
+        ],
+        overdue: [
+            { id: 4, title: "Define route parameters validation", project: "Gateway Server" }
+        ]
+    };
 
     return (
         <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8 font-sans text-slate-100">
             
-            {/* Top welcome banner */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-900/40 via-indigo-950/20 to-slate-900/40 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-xl">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 space-y-2">
-                    <span className="text-indigo-400 font-bold text-xs uppercase tracking-wider">WORKSPACE METRICS</span>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                        Welcome, {user?.name || 'Developer'}!
-                    </h1>
-                    <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-                        Here is a summary of your workspace activities and project developments. Start collaborating by choosing a space or creating a new one.
-                    </p>
-                </div>
+            {/* Greeting Header */}
+            <div>
+                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    Welcome Back, {user?.name || 'Developer'}!
+                </h1>
+                <p className="text-xs text-slate-400 mt-1">Here is the general state overview of your workflows.</p>
             </div>
 
-            {/* Quick Metrics */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-slate-950/40 border border-slate-800/60 p-5 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="space-y-1">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block">Total Workspaces</span>
-                        <div className="text-2xl font-extrabold text-white">{list.length}</div>
-                    </div>
-                    <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-                        <Briefcase className="h-5 w-5" />
-                    </div>
-                </div>
-
-                <div className="bg-slate-950/40 border border-slate-800/60 p-5 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="space-y-1">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block">Owner Roles</span>
-                        <div className="text-2xl font-extrabold text-white">
-                            {list.filter(w => w.role === 'OWNER').length}
-                        </div>
-                    </div>
-                    <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                        <Users className="h-5 w-5" />
-                    </div>
-                </div>
-
-                <div className="bg-slate-950/40 border border-slate-800/60 p-5 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="space-y-1">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block">Total Memberships</span>
-                        <div className="text-2xl font-extrabold text-white">{list.length}</div>
-                    </div>
-                    <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
-                        <TrendingUp className="h-5 w-5" />
-                    </div>
-                </div>
-
-                <div className="bg-slate-950/40 border border-slate-800/60 p-5 rounded-2xl flex items-center justify-between shadow-sm">
-                    <div className="space-y-1">
-                        <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block">System Status</span>
-                        <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 mt-2">
-                            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                            All Services Online
-                        </div>
-                    </div>
-                    <div className="p-3 bg-slate-800/40 text-slate-400 rounded-xl">
-                        <Clock className="h-5 w-5" />
-                    </div>
-                </div>
+                <StatsCard 
+                    title="Total Workspaces" 
+                    value={list.length} 
+                    icon={<Briefcase className="h-4.5 w-4.5 text-indigo-400" />} 
+                />
+                <StatsCard 
+                    title="Projects" 
+                    value="12 Active" 
+                    icon={<FolderKanban className="h-4.5 w-4.5 text-indigo-400" />} 
+                />
+                <StatsCard 
+                    title="Tasks" 
+                    value="34 Assigned" 
+                    icon={<CheckSquare className="h-4.5 w-4.5 text-indigo-400" />} 
+                />
+                <StatsCard 
+                    title="Completed" 
+                    value="84.5%" 
+                    icon={<CheckCircle2 className="h-4.5 w-4.5 text-emerald-400" />} 
+                />
             </div>
 
-            {/* Workspaces & Activity Layout split */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Grid splits */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                {/* Left: Workspaces List */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <FolderKanban className="h-5 w-5 text-indigo-400" />
-                            Workspaces List
-                        </h2>
-                        <Link 
-                            href="/workspace" 
-                            className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
-                        >
-                            View All
-                            <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {list.length > 0 ? (
-                            list.map((work: WorkSpaceItem) => {
-                                const w = work.workspaces;
-                                if (!w) return null;
-                                return (
-                                    <Link 
-                                        key={w.id} 
-                                        href={`/workspace/${w.id}`}
-                                        className="group block p-5 bg-slate-950/20 hover:bg-slate-950/40 border border-slate-800/60 hover:border-slate-700/80 rounded-2xl shadow-sm transition-all hover:scale-[1.01]"
-                                    >
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="space-y-3">
-                                                <div className="h-9 w-9 bg-slate-800 rounded-xl flex items-center justify-center font-bold text-sm text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                                    {w.name ? w.name[0].toUpperCase() : 'W'}
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-sm text-white group-hover:text-indigo-400 transition-colors">
-                                                        {w.name}
-                                                    </h3>
-                                                    <span className="text-[10px] text-slate-500 font-semibold tracking-wider">
-                                                        ID: {w.id}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            
-                                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${
-                                                work.role === 'OWNER' 
-                                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-                                                : work.role === 'ADMIN'
-                                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                                : 'bg-slate-800 text-slate-400 border border-slate-700'
-                                            }`}>
-                                                {work.role}
-                                            </span>
-                                        </div>
-                                    </Link>
-                                );
-                            })
-                        ) : (
-                            <div className="col-span-2 py-10 text-center bg-slate-950/20 border border-dashed border-slate-800 rounded-2xl">
-                                <p className="text-slate-500 text-sm">No workspaces found.</p>
-                                <button 
-                                    onClick={() => setShowCreateModal(true)}
-                                    className="mt-4 text-xs font-semibold text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1.5"
-                                >
-                                    <Plus className="h-4 w-4" /> Create a workspace
-                                </button>
-                            </div>
-                        )}
-                        
-                        {/* Quick create action card */}
-                        <button 
-                            onClick={() => setShowCreateModal(true)}
-                            className="p-5 border border-dashed border-slate-800 hover:border-indigo-500/40 rounded-2xl flex flex-col items-center justify-center text-center gap-2 group transition-all cursor-pointer bg-transparent"
-                        >
-                            <div className="p-2 bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white rounded-xl transition-all">
-                                <Plus className="h-5 w-5" />
-                            </div>
-                            <span className="text-xs font-bold text-slate-300">Create New Workspace</span>
-                            <span className="text-[10px] text-slate-500">Add an isolated space to manage team projects</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Right: Recent activity logs */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-indigo-400" />
-                        Recent Activities
-                    </h2>
+                {/* Left Columns (Col Span 2) */}
+                <div className="lg:col-span-2 space-y-6">
                     
-                    <div className="bg-slate-950/20 border border-slate-800/60 rounded-2xl p-5 space-y-4">
-                        <div className="space-y-3.5">
-                            {/* Mock log 1 */}
-                            <div className="flex gap-3 text-xs leading-relaxed">
-                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-1.5 shrink-0" />
-                                <div>
-                                    <p className="text-slate-300 font-semibold">User details retrieved</p>
-                                    <span className="text-[9px] text-slate-500">Just now</span>
-                                </div>
-                            </div>
-                            {/* Mock log 2 */}
-                            <div className="flex gap-3 text-xs leading-relaxed">
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1.5 shrink-0" />
-                                <div>
-                                    <p className="text-slate-300">Workspace data synced with server</p>
-                                    <span className="text-[9px] text-slate-500">10 mins ago</span>
-                                </div>
-                            </div>
-                            {/* Mock log 3 */}
-                            <div className="flex gap-3 text-xs leading-relaxed">
-                                <div className="w-1.5 h-1.5 bg-slate-500 rounded-full mt-1.5 shrink-0" />
-                                <div>
-                                    <p className="text-slate-300">Connected to websocket server</p>
-                                    <span className="text-[9px] text-slate-500">1 hour ago</span>
-                                </div>
-                            </div>
+                    {/* Recent Workspaces */}
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Recent Workspaces</h2>
+                            <Link href="/workspace" className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider flex items-center gap-1">
+                                View All Workspaces <ArrowRight className="h-3 w-3" />
+                            </Link>
                         </div>
-
-                        <div className="text-[10px] border-t border-slate-800/80 pt-3 text-slate-500 italic text-center">
-                            Activity logs are simulated based on backend events
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {list.length > 0 ? (
+                                list.slice(0, 3).map((item: any) => {
+                                    const w = item.workspaces;
+                                    if (!w) return null;
+                                    return (
+                                        <Card key={w.id} hoverable className="flex flex-col justify-between h-32 p-4">
+                                            <div className="space-y-2">
+                                                <div className="h-7 w-7 rounded bg-slate-900 border border-slate-800 text-indigo-400 flex items-center justify-center font-bold text-xs uppercase">
+                                                    {w.name[0]}
+                                                </div>
+                                                <h3 className="font-bold text-xs text-slate-200 truncate">{w.name}</h3>
+                                            </div>
+                                            <Link href={`/workspace/${w.id}`} className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 block pt-2 border-t border-slate-900">
+                                                Open Workspace →
+                                            </Link>
+                                        </Card>
+                                    );
+                                })
+                            ) : (
+                                <div className="col-span-3 py-8 text-center bg-slate-950/10 border border-dashed border-slate-850 rounded-2xl text-xs text-slate-500 italic">
+                                    No workspaces created yet.
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    {/* Upcoming Tasks */}
+                    <div className="space-y-3">
+                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Upcoming Tasks</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Due Today */}
+                            <div className="bg-slate-955/40 border border-slate-850 rounded-2xl p-4.5 space-y-3">
+                                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                    Due Today
+                                </span>
+                                <div className="space-y-2.5">
+                                    {upcomingTasks.today.map((t) => (
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                            <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
+                                            <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Due Tomorrow */}
+                            <div className="bg-slate-955/40 border border-slate-850 rounded-2xl p-4.5 space-y-3">
+                                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-slate-800 text-slate-400 border border-slate-700/60">
+                                    Due Tomorrow
+                                </span>
+                                <div className="space-y-2.5">
+                                    {upcomingTasks.tomorrow.map((t) => (
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                            <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
+                                            <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Overdue */}
+                            <div className="bg-slate-955/40 border border-slate-850 rounded-2xl p-4.5 space-y-3">
+                                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                    Overdue
+                                </span>
+                                <div className="space-y-2.5">
+                                    {upcomingTasks.overdue.map((t) => (
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                            <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
+                                            <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
+                {/* Right Columns (Col Span 1) */}
+                <div className="space-y-6">
+                    
+                    {/* Quick Actions Panel */}
+                    <div className="space-y-3">
+                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Quick Actions</h2>
+                        <div className="bg-slate-955/40 border border-slate-850 rounded-2xl p-4 space-y-2">
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="w-full justify-start text-xs font-semibold"
+                                onClick={() => setCreateWorkOpen(true)}
+                            >
+                                <Plus className="h-4.5 w-4.5 mr-2" />
+                                Create Workspace
+                            </Button>
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="w-full justify-start text-xs font-semibold"
+                                onClick={() => setCreateProjOpen(true)}
+                            >
+                                <Plus className="h-4.5 w-4.5 mr-2" />
+                                Create Project
+                            </Button>
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="w-full justify-start text-xs font-semibold"
+                                onClick={() => setCreateTaskOpen(true)}
+                            >
+                                <Plus className="h-4.5 w-4.5 mr-2" />
+                                Create Task
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="space-y-3">
+                        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Recent Activity</h2>
+                        <div className="bg-slate-955/40 border border-slate-850 rounded-2xl p-5 space-y-4">
+                            <TimelineItem user="Ujjwal" title="created project 'Client Web'" time="5 mins ago" />
+                            <TimelineItem user="Sarah Connor" title="assigned task 'Draft pricing tiers' to John" time="30 mins ago" />
+                            <TimelineItem user="Marcus Wright" title="added comment on task 'Verify constraints'" time="1 hour ago" />
+                            <TimelineItem user="Developer" title="created workspace 'Apollo Space'" time="3 hours ago" />
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
 
-            {/* Create Workspace Visual Modal (Pure UI / Toggle State) */}
-            {showCreateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-                    <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
-                        <div className="space-y-1.5">
-                            <h3 className="text-lg font-bold text-white">Create Workspace</h3>
-                            <p className="text-slate-400 text-xs">Configure a name for your new organization hub</p>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider block">Workspace Name</label>
-                            <input 
-                                type="text" 
-                                placeholder="Marketing Team, Dev Ops, etc."
-                                className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3.5 text-xs text-slate-200 placeholder-slate-500 outline-none transition-all"
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-2 text-xs">
-                            <button 
-                                onClick={() => setShowCreateModal(false)}
-                                className="px-4 py-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={() => setShowCreateModal(false)}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-md transition-all cursor-pointer"
-                            >
-                                Create Workspace
-                            </button>
-                        </div>
+            {/* Visual Action Modals (Quick Actions) */}
+            <Dialog 
+                isOpen={createWorkOpen} 
+                onClose={() => setCreateWorkOpen(false)}
+                title="Create Workspace"
+                description="Initialize a new isolated collaboration space."
+            >
+                <div className="space-y-4 pt-1">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
+                        <Input placeholder="Marketing Space, Apollo Space" required />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2 text-xs">
+                        <Button variant="ghost" onClick={() => setCreateWorkOpen(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={() => setCreateWorkOpen(false)}>Create Workspace</Button>
                     </div>
                 </div>
-            )}
+            </Dialog>
+
+            <Dialog 
+                isOpen={createProjOpen} 
+                onClose={() => setCreateProjOpen(false)}
+                title="Create Project"
+                description="Add a task board to partition tasks."
+            >
+                <div className="space-y-4 pt-1">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
+                        <Input placeholder="API integration, Frontend design" required />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                        <Input placeholder="Detail project parameters..." />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2 text-xs">
+                        <Button variant="ghost" onClick={() => setCreateProjOpen(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={() => setCreateProjOpen(false)}>Create Project</Button>
+                    </div>
+                </div>
+            </Dialog>
+
+            <Dialog 
+                isOpen={createTaskOpen} 
+                onClose={() => setCreateTaskOpen(false)}
+                title="Create Task"
+                description="Assign steps to project boards."
+            >
+                <div className="space-y-4 pt-1">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
+                        <Input placeholder="Verify endpoints integration" required />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                        <Input placeholder="Detail step specifications..." />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2 text-xs">
+                        <Button variant="ghost" onClick={() => setCreateTaskOpen(false)}>Cancel</Button>
+                        <Button variant="primary" onClick={() => setCreateTaskOpen(false)}>Create Task</Button>
+                    </div>
+                </div>
+            </Dialog>
 
         </div>
     );

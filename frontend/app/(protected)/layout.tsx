@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import CurrentUser from '@/hooks/currentUser';
 import useWorkspace from "@/hooks/useWorkspace";
@@ -9,19 +9,21 @@ import Link from 'next/link';
 import { 
   Layers, 
   LayoutDashboard, 
-  FolderKanban, 
-  Settings, 
-  LogOut, 
-  Bell, 
-  Search, 
-  Plus, 
-  ChevronRight, 
-  User, 
   Briefcase, 
-  Menu, 
-  X,
-  Activity
+  FolderKanban, 
+  Bell, 
+  Settings, 
+  User, 
+  LogOut,
+  Search,
+  Plus,
+  ChevronDown,
+  Menu,
+  X
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog } from '@/components/ui/dialog';
 
 export default function ProtectedLayout({
     children,
@@ -31,9 +33,12 @@ export default function ProtectedLayout({
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [switcherOpen, setSwitcherOpen] = useState(false);
+    const [quickCreateOpen, setQuickCreateOpen] = useState(false);
 
     const { data: user, isLoading: isUserLoading } = CurrentUser();
     const { data: workspaces, isLoading: isWorkspacesLoading } = useWorkspace();
+    const switcherRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isUserLoading && !user) {
@@ -41,13 +46,23 @@ export default function ProtectedLayout({
         }
     }, [user, isUserLoading, router]);
 
+    // Handle click outside workspace switcher
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+                setSwitcherOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleLogout = async () => {
         try {
             await logOut();
             router.push('/login');
         } catch (error) {
             console.error("Logout failed", error);
-            // Fallback redirect
             router.push('/login');
         }
     };
@@ -55,9 +70,9 @@ export default function ProtectedLayout({
     if (isUserLoading) {
         return (
             <div className="flex h-screen w-screen items-center justify-center bg-slate-950">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-                    <p className="text-slate-400 text-xs font-medium tracking-wide">Syncing session...</p>
+                <div className="flex flex-col items-center gap-3">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                    <p className="text-slate-400 text-xs font-semibold">Loading session...</p>
                 </div>
             </div>
         );
@@ -68,8 +83,16 @@ export default function ProtectedLayout({
     }
 
     const workspacesList = workspaces?.data || [];
+    const activeWorkspace = workspacesList.find((w: any) => pathname?.includes(`/workspace/${w.workspaces?.id}`))?.workspaces;
 
-    // Get initials for profile fallback
+    const navItems = [
+        { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-4.5 w-4.5" /> },
+        { label: "Workspaces", href: "/workspace", icon: <Briefcase className="h-4.5 w-4.5" /> },
+        { label: "Projects", href: "/project", icon: <FolderKanban className="h-4.5 w-4.5" /> },
+        { label: "Notifications", href: "/notifications", icon: <Bell className="h-4.5 w-4.5" /> },
+        { label: "Settings", href: "/settings", icon: <Settings className="h-4.5 w-4.5" /> },
+    ];
+
     const initials = user.name
         ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
         : 'US';
@@ -87,17 +110,17 @@ export default function ProtectedLayout({
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800/60 p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0
+                fixed inset-y-0 left-0 z-50 w-60 bg-slate-950 border-r border-slate-850 p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 <div className="space-y-6">
-                    {/* Header */}
+                    {/* Logo */}
                     <div className="flex items-center justify-between">
                         <Link href="/dashboard" className="flex items-center gap-2.5">
                             <div className="bg-indigo-600 p-1.5 rounded-lg">
                                 <Layers className="h-4.5 w-4.5 text-white" />
                             </div>
-                            <span className="font-bold text-lg text-white tracking-tight">Dsync</span>
+                            <span className="font-extrabold text-base text-white tracking-tight">Dsync Hub</span>
                         </Link>
                         <button 
                             onClick={() => setSidebarOpen(false)}
@@ -107,84 +130,75 @@ export default function ProtectedLayout({
                         </button>
                     </div>
 
-                    {/* Main Nav */}
+                    {/* Navigation */}
                     <nav className="space-y-1">
-                        <Link 
-                            href="/dashboard"
-                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                                pathname === '/dashboard' 
-                                ? 'bg-indigo-600 text-white' 
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                            }`}
-                        >
-                            <LayoutDashboard className="h-4.5 w-4.5" />
-                            Dashboard
-                        </Link>
-
-                        <Link 
-                            href="/workspace"
-                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                                pathname === '/workspace' 
-                                ? 'bg-indigo-600 text-white' 
-                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                            }`}
-                        >
-                            <Briefcase className="h-4.5 w-4.5" />
-                            Workspaces
-                        </Link>
+                        {navItems.map((item) => {
+                            const isSelected = pathname === item.href || (item.href !== '/dashboard' && pathname?.startsWith(item.href));
+                            return (
+                                <Link 
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
+                                        isSelected 
+                                        ? 'bg-indigo-650 text-white shadow-sm' 
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                                    }`}
+                                >
+                                    {item.icon}
+                                    {item.label}
+                                </Link>
+                            )
+                        })}
                     </nav>
 
-                    {/* Workspaces Section */}
-                    <div className="space-y-2 pt-4">
-                        <div className="flex items-center justify-between px-3">
-                            <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">My Workspaces</span>
-                            <Link href="/workspace" className="text-slate-400 hover:text-indigo-400 p-0.5 rounded transition-colors">
-                                <Plus className="h-3.5 w-3.5" />
-                            </Link>
-                        </div>
-                        <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
-                            {isWorkspacesLoading ? (
-                                <div className="px-3 py-2 text-xs text-slate-500 animate-pulse">Loading list...</div>
-                            ) : workspacesList.length > 0 ? (
-                                workspacesList.map((work: any) => {
-                                    const w = work.workspaces;
-                                    const isSelected = pathname?.includes(`/workspace/${w.id}`);
-                                    return (
+                    {/* Workspace Switcher in Sidebar */}
+                    <div className="pt-2 border-t border-slate-900 relative" ref={switcherRef}>
+                        <span className="text-[9px] font-bold text-slate-500 tracking-wider uppercase block px-3 mb-2">Active Workspace</span>
+                        <button 
+                            onClick={() => setSwitcherOpen(!switcherOpen)}
+                            className="w-full flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-300 hover:text-white transition-all"
+                        >
+                            <span className="truncate">{activeWorkspace ? activeWorkspace.name : "Select Workspace"}</span>
+                            <ChevronDown className="h-3.5 w-3.5 opacity-65 shrink-0 ml-1.5" />
+                        </button>
+
+                        {switcherOpen && (
+                            <div className="absolute left-0 right-0 bottom-full mb-1 bg-slate-950 border border-slate-850 rounded-xl max-h-48 overflow-y-auto z-20 py-1.5 shadow-xl">
+                                {workspacesList.length > 0 ? (
+                                    workspacesList.map((item: any) => (
                                         <Link
-                                            key={w.id}
-                                            href={`/workspace/${w.id}`}
-                                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                                                isSelected 
-                                                ? 'bg-slate-800 text-indigo-400 border border-slate-700/60' 
-                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-                                            }`}
+                                            key={item.workspaces?.id}
+                                            href={`/workspace/${item.workspaces?.id}`}
+                                            onClick={() => setSwitcherOpen(false)}
+                                            className="block w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
                                         >
-                                            <span className="truncate">{w.name}</span>
-                                            <ChevronRight className={`h-3 w-3 opacity-60 transition-transform ${isSelected ? 'rotate-90 text-indigo-400' : ''}`} />
+                                            {item.workspaces?.name}
                                         </Link>
-                                    );
-                                })
-                            ) : (
-                                <p className="px-3 py-2 text-xs text-slate-500 italic">No workspaces</p>
-                            )}
-                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-3 py-2 text-[10px] text-slate-500 italic">No spaces</div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Footer User Profile Panel */}
-                <div className="border-t border-slate-800/80 pt-4 mt-auto">
+                {/* User Card */}
+                <div className="border-t border-slate-905 pt-4">
                     <div className="flex items-center gap-3 px-1">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-500/10">
-                            {initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-200 truncate">{user.name}</p>
-                            <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-                        </div>
+                        <Link href="/profile" className="flex items-center gap-2.5 min-w-0 flex-1 group">
+                            <div className="h-8.5 w-8.5 rounded-lg bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 group-hover:scale-105 transition-transform">
+                                {initials}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-slate-200 truncate group-hover:text-indigo-400 transition-colors">{user.name}</p>
+                                <p className="text-[9px] text-slate-500 truncate">Settings</p>
+                            </div>
+                        </Link>
                         <button 
                             onClick={handleLogout}
-                            title="Sign Out"
-                            className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition-colors"
+                            title="Logout"
+                            className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition-colors shrink-0 cursor-pointer"
                         >
                             <LogOut className="h-4.5 w-4.5" />
                         </button>
@@ -193,9 +207,9 @@ export default function ProtectedLayout({
             </aside>
 
             {/* Main Area */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-slate-900">
-                {/* Header */}
-                <header className="h-16 border-b border-slate-800/60 bg-slate-950/30 px-6 flex items-center justify-between shrink-0">
+            <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/50">
+                {/* Header Navbar */}
+                <header className="h-16 border-b border-slate-850 bg-slate-950/20 px-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setSidebarOpen(true)}
@@ -203,11 +217,12 @@ export default function ProtectedLayout({
                         >
                             <Menu className="h-5.5 w-5.5" />
                         </button>
-                        
-                        <div className="hidden sm:flex items-center text-xs text-slate-500 gap-2 font-medium">
-                            <span>Dsync Space</span>
-                            <ChevronRight className="h-3 w-3" />
-                            <span className="text-slate-300 font-semibold capitalize">
+
+                        {/* Breadcrumbs */}
+                        <div className="hidden sm:flex items-center text-[10px] text-slate-500 gap-1.5 font-bold uppercase tracking-wider">
+                            <span>Dsync</span>
+                            <span className="opacity-50">/</span>
+                            <span className="text-slate-300">
                                 {pathname?.split('/').filter(Boolean).pop() || 'Dashboard'}
                             </span>
                         </div>
@@ -215,28 +230,71 @@ export default function ProtectedLayout({
 
                     <div className="flex items-center gap-4">
                         {/* Search Bar */}
-                        <div className="relative hidden md:block w-64">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-                            <input 
+                        <div className="relative hidden md:block w-48 lg:w-56">
+                            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+                            <Input 
                                 type="text" 
                                 placeholder="Search workspace..."
-                                className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-1.5 pl-9 pr-4 text-xs placeholder-slate-500 outline-none transition-all"
+                                className="pl-9"
                             />
                         </div>
 
-                        {/* Notifications */}
-                        <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-xl relative transition-all">
-                            <Bell className="h-4.5 w-4.5" />
-                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
-                        </button>
+                        {/* Quick Create Button */}
+                        <Button 
+                            variant="primary" 
+                            size="sm"
+                            className="h-8 py-0 px-3 text-xs"
+                            onClick={() => setQuickCreateOpen(true)}
+                        >
+                            <Plus className="h-4.5 w-4.5 mr-1" />
+                            Create
+                        </Button>
+
+                        {/* Notification Bell */}
+                        <Link href="/notifications">
+                            <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-xl relative transition-all cursor-pointer">
+                                <Bell className="h-4.5 w-4.5" />
+                                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                            </button>
+                        </Link>
+
+                        {/* Profile Avatar */}
+                        <Link href="/profile" className="shrink-0">
+                            <div className="h-8 w-8 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center font-bold text-xs ring-1 ring-slate-800 hover:ring-indigo-500/50 transition-all">
+                                {initials}
+                            </div>
+                        </Link>
                     </div>
                 </header>
 
                 {/* Content */}
-                <main className="flex-1 overflow-y-auto bg-slate-900/60">
+                <main className="flex-1 overflow-y-auto">
                     {children}
                 </main>
             </div>
+
+            {/* Quick Actions Creator Dialog */}
+            <Dialog 
+                isOpen={quickCreateOpen}
+                onClose={() => setQuickCreateOpen(false)}
+                title="Quick Create Action"
+                description="Select an entity to configure and create instantly."
+            >
+                <div className="grid grid-cols-3 gap-3 text-center">
+                    <Link href="/workspace" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                        <Briefcase className="h-5 w-5 text-indigo-400 mx-auto" />
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Workspace</div>
+                    </Link>
+                    <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                        <FolderKanban className="h-5 w-5 text-indigo-400 mx-auto" />
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Project</div>
+                    </Link>
+                    <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                        <Layers className="h-5 w-5 text-indigo-400 mx-auto" />
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Task</div>
+                    </Link>
+                </div>
+            </Dialog>
         </div>
     );
 }
