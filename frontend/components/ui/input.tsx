@@ -1,70 +1,19 @@
 import * as React from "react"
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+import { cn } from "@/lib/utils"
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", type = "text", ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={`
-          w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3.5 
-          text-xs sm:text-sm text-slate-200 placeholder-slate-500 outline-none transition-all
-          focus:ring-1 focus:ring-indigo-500/30
-          ${className}
-        `}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Input.displayName = "Input"
-
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
-
-export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className = "", ...props }, ref) => {
-    return (
-      <textarea
-        className={`
-          w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3.5 
-          text-xs sm:text-sm text-slate-200 placeholder-slate-500 outline-none transition-all resize-none
-          focus:ring-1 focus:ring-indigo-500/30
-          ${className}
-        `}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Textarea.displayName = "Textarea"
-
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  options: { value: string | number; label: string }[]
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className = "", options, ...props }, ref) => {
-    return (
-      <select
-        className={`
-          w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3.5 
-          text-xs sm:text-sm text-slate-200 outline-none transition-all cursor-pointer
-          focus:ring-1 focus:ring-indigo-500/30
-          ${className}
-        `}
-        ref={ref}
-        {...props}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    )
-  }
-)
-Select.displayName = "Select"
+export { Input }

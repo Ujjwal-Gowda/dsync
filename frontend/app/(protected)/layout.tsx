@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import CurrentUser from '@/hooks/currentUser';
 import useWorkspace from "@/hooks/useWorkspace";
@@ -23,7 +23,19 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog } from '@/components/ui/dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ProtectedLayout({
     children,
@@ -33,29 +45,16 @@ export default function ProtectedLayout({
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [switcherOpen, setSwitcherOpen] = useState(false);
     const [quickCreateOpen, setQuickCreateOpen] = useState(false);
 
     const { data: user, isLoading: isUserLoading } = CurrentUser();
-    const { data: workspaces, isLoading: isWorkspacesLoading } = useWorkspace();
-    const switcherRef = useRef<HTMLDivElement>(null);
+    const { data: workspaces } = useWorkspace();
 
     useEffect(() => {
         if (!isUserLoading && !user) {
             router.push('/login');
         }
     }, [user, isUserLoading, router]);
-
-    // Handle click outside workspace switcher
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
-                setSwitcherOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     const handleLogout = async () => {
         try {
@@ -104,20 +103,20 @@ export default function ProtectedLayout({
             {sidebarOpen && (
                 <div 
                     onClick={() => setSidebarOpen(false)}
-                    className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm md:hidden"
+                    className="fixed inset-0 z-40 bg-slate-955/60 backdrop-blur-sm md:hidden"
                 />
             )}
 
             {/* Sidebar */}
             <aside className={`
-                fixed inset-y-0 left-0 z-50 w-60 bg-slate-950 border-r border-slate-850 p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0
+                fixed inset-y-0 left-0 z-50 w-60 bg-slate-955 border-r border-slate-850 p-5 flex flex-col justify-between transition-transform duration-300 md:relative md:translate-x-0
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
                 <div className="space-y-6">
                     {/* Logo */}
                     <div className="flex items-center justify-between">
                         <Link href="/dashboard" className="flex items-center gap-2.5">
-                            <div className="bg-indigo-600 p-1.5 rounded-lg">
+                            <div className="bg-indigo-650 p-1.5 rounded-lg">
                                 <Layers className="h-4.5 w-4.5 text-white" />
                             </div>
                             <span className="font-extrabold text-base text-white tracking-tight">Dsync Hub</span>
@@ -151,35 +150,30 @@ export default function ProtectedLayout({
                         })}
                     </nav>
 
-                    {/* Workspace Switcher in Sidebar */}
-                    <div className="pt-2 border-t border-slate-900 relative" ref={switcherRef}>
+                    {/* Workspace Switcher in Sidebar using official DropdownMenu */}
+                    <div className="pt-2 border-t border-slate-900">
                         <span className="text-[9px] font-bold text-slate-500 tracking-wider uppercase block px-3 mb-2">Active Workspace</span>
-                        <button 
-                            onClick={() => setSwitcherOpen(!switcherOpen)}
-                            className="w-full flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-300 hover:text-white transition-all"
-                        >
-                            <span className="truncate">{activeWorkspace ? activeWorkspace.name : "Select Workspace"}</span>
-                            <ChevronDown className="h-3.5 w-3.5 opacity-65 shrink-0 ml-1.5" />
-                        </button>
-
-                        {switcherOpen && (
-                            <div className="absolute left-0 right-0 bottom-full mb-1 bg-slate-950 border border-slate-850 rounded-xl max-h-48 overflow-y-auto z-20 py-1.5 shadow-xl">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="w-full flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-350 hover:text-white transition-all cursor-pointer">
+                                <span className="truncate">{activeWorkspace ? activeWorkspace.name : "Select Workspace"}</span>
+                                <ChevronDown className="h-3.5 w-3.5 opacity-65 shrink-0 ml-1.5" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-52 bg-slate-950 border border-slate-850 text-slate-300">
                                 {workspacesList.length > 0 ? (
                                     workspacesList.map((item: any) => (
-                                        <Link
-                                            key={item.workspaces?.id}
-                                            href={`/workspace/${item.workspaces?.id}`}
-                                            onClick={() => setSwitcherOpen(false)}
-                                            className="block w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-900 text-slate-400 hover:text-white transition-colors"
+                                        <DropdownMenuItem 
+                                            key={item.workspaces?.id} 
+                                            onClick={() => router.push(`/workspace/${item.workspaces?.id}`)}
+                                            className="block w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-900 text-slate-450 hover:text-white transition-colors cursor-pointer outline-none"
                                         >
                                             {item.workspaces?.name}
-                                        </Link>
+                                        </DropdownMenuItem>
                                     ))
                                 ) : (
                                     <div className="px-3 py-2 text-[10px] text-slate-500 italic">No spaces</div>
                                 )}
-                            </div>
-                        )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
@@ -209,7 +203,7 @@ export default function ProtectedLayout({
             {/* Main Area */}
             <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/50">
                 {/* Header Navbar */}
-                <header className="h-16 border-b border-slate-850 bg-slate-950/20 px-6 flex items-center justify-between shrink-0">
+                <header className="h-16 border-b border-slate-850 bg-slate-955/20 px-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-4">
                         <button 
                             onClick={() => setSidebarOpen(true)}
@@ -241,9 +235,9 @@ export default function ProtectedLayout({
 
                         {/* Quick Create Button */}
                         <Button 
-                            variant="primary" 
+                            variant="default" 
                             size="sm"
-                            className="h-8 py-0 px-3 text-xs"
+                            className="h-8 py-0 px-3 text-xs font-bold"
                             onClick={() => setQuickCreateOpen(true)}
                         >
                             <Plus className="h-4.5 w-4.5 mr-1" />
@@ -273,27 +267,30 @@ export default function ProtectedLayout({
                 </main>
             </div>
 
-            {/* Quick Actions Creator Dialog */}
-            <Dialog 
-                isOpen={quickCreateOpen}
-                onClose={() => setQuickCreateOpen(false)}
-                title="Quick Create Action"
-                description="Select an entity to configure and create instantly."
-            >
-                <div className="grid grid-cols-3 gap-3 text-center">
-                    <Link href="/workspace" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
-                        <Briefcase className="h-5 w-5 text-indigo-400 mx-auto" />
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Workspace</div>
-                    </Link>
-                    <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
-                        <FolderKanban className="h-5 w-5 text-indigo-400 mx-auto" />
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Project</div>
-                    </Link>
-                    <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
-                        <Layers className="h-5 w-5 text-indigo-400 mx-auto" />
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Task</div>
-                    </Link>
-                </div>
+            {/* Quick Actions Creator Dialog using official Dialog */}
+            <Dialog open={quickCreateOpen} onOpenChange={setQuickCreateOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Quick Create Action</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Select an entity to configure and create instantly.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-3 gap-3 text-center pt-2">
+                        <Link href="/workspace" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-850 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                            <Briefcase className="h-5 w-5 text-indigo-400 mx-auto" />
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Workspace</div>
+                        </Link>
+                        <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-850 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                            <FolderKanban className="h-5 w-5 text-indigo-400 mx-auto" />
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Project</div>
+                        </Link>
+                        <Link href="/project" onClick={() => setQuickCreateOpen(false)} className="p-4 bg-slate-950 hover:bg-slate-950/80 border border-slate-855 hover:border-indigo-500/50 rounded-xl transition-all space-y-2 block">
+                            <Layers className="h-5 w-5 text-indigo-400 mx-auto" />
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Task</div>
+                        </Link>
+                    </div>
+                </DialogContent>
             </Dialog>
         </div>
     );

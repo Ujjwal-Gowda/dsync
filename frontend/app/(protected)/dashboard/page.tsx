@@ -9,18 +9,20 @@ import {
   FolderKanban, 
   CheckSquare, 
   CheckCircle2, 
-  Activity, 
   Plus, 
-  Calendar,
-  AlertTriangle,
-  Clock,
+  Clock, 
   ArrowRight,
-  TrendingUp,
   Inbox
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { StatsCard, TimelineItem } from "@/components/ui/shared";
-import { Dialog } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -116,7 +118,7 @@ export default function Dashboard() {
                                     const w = item.workspaces;
                                     if (!w) return null;
                                     return (
-                                        <Card key={w.id} hoverable className="flex flex-col justify-between h-32 p-4">
+                                        <Card key={w.id} className="flex flex-col justify-between h-32 p-4 bg-slate-950/20 border border-slate-850 hover:border-slate-700 hover:scale-[1.01] transition-all">
                                             <div className="space-y-2">
                                                 <div className="h-7 w-7 rounded bg-slate-900 border border-slate-800 text-indigo-400 flex items-center justify-center font-bold text-xs uppercase">
                                                     {w.name[0]}
@@ -148,7 +150,7 @@ export default function Dashboard() {
                                 </span>
                                 <div className="space-y-2.5">
                                     {upcomingTasks.today.map((t) => (
-                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-955/60 border border-slate-850/60 rounded-xl space-y-1">
                                             <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
                                             <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
                                         </div>
@@ -163,7 +165,7 @@ export default function Dashboard() {
                                 </span>
                                 <div className="space-y-2.5">
                                     {upcomingTasks.tomorrow.map((t) => (
-                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-955/60 border border-slate-850/60 rounded-xl space-y-1">
                                             <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
                                             <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
                                         </div>
@@ -178,7 +180,7 @@ export default function Dashboard() {
                                 </span>
                                 <div className="space-y-2.5">
                                     {upcomingTasks.overdue.map((t) => (
-                                        <div key={t.id} className="text-xs p-2.5 bg-slate-950/60 border border-slate-850/60 rounded-xl space-y-1">
+                                        <div key={t.id} className="text-xs p-2.5 bg-slate-955/60 border border-slate-850/60 rounded-xl space-y-1">
                                             <p className="font-semibold text-slate-300 leading-snug">{t.title}</p>
                                             <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">📁 {t.project}</span>
                                         </div>
@@ -242,67 +244,76 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Visual Action Modals (Quick Actions) */}
-            <Dialog 
-                isOpen={createWorkOpen} 
-                onClose={() => setCreateWorkOpen(false)}
-                title="Create Workspace"
-                description="Initialize a new isolated collaboration space."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
-                        <Input placeholder="Marketing Space, Apollo Space" required />
+            {/* Quick Actions Modals using official Dialog component */}
+            <Dialog open={createWorkOpen} onOpenChange={setCreateWorkOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Create Workspace</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Initialize a new isolated collaboration space.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
+                            <Input placeholder="Marketing Space, Apollo Space" required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setCreateWorkOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setCreateWorkOpen(false)}>Create Workspace</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setCreateWorkOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setCreateWorkOpen(false)}>Create Workspace</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={createProjOpen} 
-                onClose={() => setCreateProjOpen(false)}
-                title="Create Project"
-                description="Add a task board to partition tasks."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
-                        <Input placeholder="API integration, Frontend design" required />
+            <Dialog open={createProjOpen} onOpenChange={setCreateProjOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Create Project</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Add a task board to partition tasks.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
+                            <Input placeholder="API integration, Frontend design" required />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                            <Input placeholder="Detail project parameters..." />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setCreateProjOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setCreateProjOpen(false)}>Create Project</Button>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
-                        <Input placeholder="Detail project parameters..." />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setCreateProjOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setCreateProjOpen(false)}>Create Project</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={createTaskOpen} 
-                onClose={() => setCreateTaskOpen(false)}
-                title="Create Task"
-                description="Assign steps to project boards."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
-                        <Input placeholder="Verify endpoints integration" required />
+            <Dialog open={createTaskOpen} onOpenChange={setCreateTaskOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Create Task</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Assign steps to project boards.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
+                            <Input placeholder="Verify endpoints integration" required />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                            <Input placeholder="Detail step specifications..." />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setCreateTaskOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setCreateTaskOpen(false)}>Create Task</Button>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
-                        <Input placeholder="Detail step specifications..." />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setCreateTaskOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setCreateTaskOpen(false)}>Create Task</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
         </div>

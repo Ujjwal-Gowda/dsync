@@ -17,19 +17,23 @@ import {
   Kanban,
   Layout,
   UserPlus,
-  Play,
   CheckCircle,
-  Briefcase,
   Users,
-  TrendingUp,
   AlertTriangle,
-  ArrowLeft
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StatsCard, TimelineItem } from "@/components/ui/shared";
 import { Status, Priority } from "@/types/user";
 
@@ -38,7 +42,7 @@ export default function ProjectDetail() {
     const router = useRouter();
     const projId = Number(params?.id);
 
-    const [activeTab, setActiveTab] = useState<"overview" | "board">("board");
+    const [activeTab, setActiveTab] = useState<string>("board");
     const [createTaskOpen, setCreateTaskOpen] = useState(false);
     const [editProjOpen, setEditProjOpen] = useState(false);
     const [inviteUserOpen, setInviteUserOpen] = useState(false);
@@ -91,7 +95,7 @@ export default function ProjectDetail() {
                 <Link href={`/workspace/${mockProject.workspaceId}`} className="hover:text-slate-300">
                     Workspace
                 </Link>
-                <span>/</span>
+                <ChevronRight className="h-3 w-3" />
                 <span className="text-slate-400">Projects</span>
             </div>
 
@@ -102,44 +106,34 @@ export default function ProjectDetail() {
                         <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-none">
                             {mockProject.name}
                         </h1>
-                        <Badge variant="info">{mockProject.status}</Badge>
+                        <Badge>{mockProject.status}</Badge>
                     </div>
                     <p className="text-xs text-slate-400 max-w-xl leading-relaxed">{mockProject.description}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                    {/* View toggles */}
-                    <div className="flex bg-slate-950/40 p-1 rounded-xl border border-slate-850 text-xs">
-                        <button 
-                            onClick={() => setActiveTab("board")}
-                            className={`p-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'board' ? 'bg-indigo-650 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                            title="Kanban Board"
-                        >
-                            <Kanban className="h-3.5 w-3.5" />
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab("overview")}
-                            className={`p-1.5 rounded-lg transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-indigo-650 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                            title="Project Overview"
-                        >
-                            <Layout className="h-3.5 w-3.5" />
-                        </button>
-                    </div>
-
                     <Button variant="secondary" size="sm" onClick={() => setEditProjOpen(true)}>
                         <Edit3 className="h-3.5 w-3.5 mr-1.5" /> Edit
                     </Button>
-                    <Button variant="danger" size="sm">
+                    <Button variant="destructive" size="sm">
                         <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
                     </Button>
                 </div>
             </div>
 
-            {/* SUB CONTENT PANELS */}
-            
-            {/* 1. PROJECT OVERVIEW TAB */}
-            {activeTab === "overview" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tabs details using official shadcn Tabs */}
+            <Tabs defaultValue="board" className="w-full space-y-6" onValueChange={setActiveTab}>
+                <TabsList className="bg-slate-950/40 border border-slate-850 p-1.5 rounded-xl text-xs font-semibold w-full sm:w-fit flex select-none">
+                    <TabsTrigger value="board" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-655 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <Kanban className="h-3.5 w-3.5" /> Board View
+                    </TabsTrigger>
+                    <TabsTrigger value="overview" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-655 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <Layout className="h-3.5 w-3.5" /> Project Overview
+                    </TabsTrigger>
+                </TabsList>
+
+                {/* 1. PROJECT OVERVIEW TAB CONTENT */}
+                <TabsContent value="overview" className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-0">
                     <div className="lg:col-span-2 space-y-6">
                         
                         {/* Stats Widgets */}
@@ -154,18 +148,18 @@ export default function ProjectDetail() {
                             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Recent Tasks</h3>
                             <div className="bg-slate-955/20 border border-slate-850 rounded-2xl p-4.5 space-y-2">
                                 {mockProject.tasks.slice(0, 3).map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between p-3.5 bg-slate-950/40 hover:bg-slate-950/80 border border-slate-850/60 rounded-xl transition-all">
+                                    <div key={t.id} className="flex items-center justify-between p-3.5 bg-slate-950/40 hover:bg-slate-955/80 border border-slate-850/60 rounded-xl transition-all">
                                         <div className="space-y-1 min-w-0 flex-1 pr-3">
                                             <p className="font-bold text-xs text-slate-200 truncate">{t.title}</p>
                                             <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Assignee: {t.assignee}</span>
                                         </div>
-                                        <Badge variant={t.status === 'DONE' ? 'success' : 'default'}>{t.status}</Badge>
+                                        <Badge>{t.status}</Badge>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Distribution and Completions Mock chart representation */}
+                        {/* Distribution and Completions representation */}
                         <div className="bg-slate-955/20 border border-slate-850 p-6 rounded-2xl space-y-4">
                             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Task Distribution</h3>
                             <div className="grid grid-cols-2 gap-4">
@@ -189,15 +183,15 @@ export default function ProjectDetail() {
                         <div className="space-y-3">
                             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Quick actions</h3>
                             <div className="bg-slate-955/20 border border-slate-850 rounded-2xl p-4.5 space-y-2.5">
-                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs" onClick={() => setCreateTaskOpen(true)}>
+                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs font-semibold" onClick={() => setCreateTaskOpen(true)}>
                                     <Plus className="h-4.5 w-4.5 mr-2 text-indigo-400" />
                                     Create Task
                                 </Button>
-                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs" onClick={() => setActiveTab("board")}>
+                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs font-semibold" onClick={() => setActiveTab("board")}>
                                     <Kanban className="h-4.5 w-4.5 mr-2 text-indigo-400" />
                                     Board View
                                 </Button>
-                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs" onClick={() => setInviteUserOpen(true)}>
+                                <Button variant="secondary" size="sm" className="w-full justify-start text-xs font-semibold" onClick={() => setInviteUserOpen(true)}>
                                     <UserPlus className="h-4.5 w-4.5 mr-2 text-indigo-400" />
                                     Invite User
                                 </Button>
@@ -215,12 +209,10 @@ export default function ProjectDetail() {
                         </div>
 
                     </div>
-                </div>
-            )}
+                </TabsContent>
 
-            {/* 2. KANBAN BOARD TAB */}
-            {activeTab === "board" && (
-                <div className="space-y-6">
+                {/* 2. KANBAN BOARD TAB CONTENT */}
+                <TabsContent value="board" className="space-y-6 pt-0">
                     {/* Filter bar */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-2.5">
@@ -236,7 +228,7 @@ export default function ProjectDetail() {
                             </button>
                         </div>
 
-                        <Button variant="primary" size="sm" onClick={() => setCreateTaskOpen(true)}>
+                        <Button variant="default" size="sm" onClick={() => setCreateTaskOpen(true)}>
                             <Plus className="h-4 w-4 mr-1.5" />
                             Create Task
                         </Button>
@@ -245,15 +237,15 @@ export default function ProjectDetail() {
                     {/* Columns grid */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-5 items-start">
                         {columns.map((col) => {
-                            const columnTasks = mockProject.tasks.filter((t) => t.status === col.id);
+                            const columnTasks = mockProject.tasks.filter((t: any) => t.status === col.id);
                             return (
-                                <div key={col.id} className="bg-slate-955/20 border border-slate-850 rounded-2xl p-4.5 space-y-4 min-h-[60vh] max-h-[75vh] flex flex-col overflow-hidden">
+                                <div key={col.id} className="bg-slate-955/20 border border-slate-855 rounded-2xl p-4.5 space-y-4 min-h-[60vh] max-h-[75vh] flex flex-col overflow-hidden">
                                     {/* Column details */}
                                     <div className="flex justify-between items-center shrink-0">
                                         <span className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${col.color}`}>
                                             {col.title}
                                         </span>
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-950 border border-slate-850 p-1 rounded-md shrink-0">
+                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-955 border border-slate-850 p-1 rounded-md shrink-0">
                                             {columnTasks.length}
                                         </span>
                                     </div>
@@ -261,7 +253,7 @@ export default function ProjectDetail() {
                                     {/* Tasks wrapper */}
                                     <div className="flex-1 overflow-y-auto space-y-3 pr-1">
                                         {columnTasks.length > 0 ? (
-                                            columnTasks.map((t) => {
+                                            columnTasks.map((t: any) => {
                                                 const initial = t.assignee[0].toUpperCase();
                                                 return (
                                                     <div key={t.id} className="p-4 bg-slate-900 border border-slate-800 hover:border-slate-700/80 rounded-2xl shadow-sm space-y-3 group transition-all">
@@ -278,8 +270,8 @@ export default function ProjectDetail() {
                                                         {/* Labels */}
                                                         {t.labels.length > 0 && (
                                                             <div className="flex flex-wrap gap-1">
-                                                                {t.labels.map((lbl, i) => (
-                                                                    <span key={i} className="text-[8px] font-bold bg-slate-950 border border-slate-850 px-1 rounded text-slate-400">
+                                                                {t.labels.map((lbl: string, i: number) => (
+                                                                    <span key={i} className="text-[8px] font-bold bg-slate-950 border border-slate-850 px-1.5 rounded text-slate-400">
                                                                         {lbl}
                                                                     </span>
                                                                 ))}
@@ -315,75 +307,84 @@ export default function ProjectDetail() {
                             );
                         })}
                     </div>
-                </div>
-            )}
+                </TabsContent>
+            </Tabs>
 
-            {/* Actions Form Modals */}
-            <Dialog 
-                isOpen={createTaskOpen} 
-                onClose={() => setCreateTaskOpen(false)}
-                title="Create Task"
-                description="Initialize and assign a task under this project."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
-                        <Input placeholder="Flesh out endpoints controller..." required />
+            {/* Actions Form Modals using official Dialog */}
+            <Dialog open={createTaskOpen} onOpenChange={setCreateTaskOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Create Task</DialogTitle>
+                        <DialogDescription className="text-slate-450">
+                            Initialize and assign a task under this project.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
+                            <Input placeholder="Flesh out endpoints controller..." required />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Priority</label>
+                            <select className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3 text-xs text-slate-200 outline-none">
+                                <option>LOW</option>
+                                <option>MEDIUM</option>
+                                <option>HIGH</option>
+                                <option>URGENT</option>
+                            </select>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setCreateTaskOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setCreateTaskOpen(false)}>Create Task</Button>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Priority</label>
-                        <select className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3 text-xs text-slate-200 outline-none">
-                            <option>LOW</option>
-                            <option>MEDIUM</option>
-                            <option>HIGH</option>
-                            <option>URGENT</option>
-                        </select>
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setCreateTaskOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setCreateTaskOpen(false)}>Create Task</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={editProjOpen} 
-                onClose={() => setEditProjOpen(false)}
-                title="Edit Project"
-                description="Update basic tracking project board params."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
-                        <Input placeholder="Rename project board..." defaultValue={mockProject.name} required />
+            <Dialog open={editProjOpen} onOpenChange={setEditProjOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Edit Project</DialogTitle>
+                        <DialogDescription className="text-slate-450">
+                            Update basic tracking project board params.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
+                            <Input placeholder="Rename project board..." defaultValue={mockProject.name} required />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                            <Input placeholder="Update description..." defaultValue={mockProject.description} />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setEditProjOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setEditProjOpen(false)}>Save</Button>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
-                        <Input placeholder="Update description..." defaultValue={mockProject.description} />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setEditProjOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setEditProjOpen(false)}>Save</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={inviteUserOpen} 
-                onClose={() => setInviteUserOpen(false)}
-                title="Invite Member to Project"
-                description="Invite another teammate to review tasks inside this board."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Teammate Email</label>
-                        <Input type="email" placeholder="name@company.com" required />
+            <Dialog open={inviteUserOpen} onOpenChange={setInviteUserOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Invite Member to Project</DialogTitle>
+                        <DialogDescription className="text-slate-455">
+                            Invite another teammate to review tasks inside this board.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Teammate Email</label>
+                            <Input type="email" placeholder="name@company.com" required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setInviteUserOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setInviteUserOpen(false)}>Invite User</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setInviteUserOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setInviteUserOpen(false)}>Invite User</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
         </div>

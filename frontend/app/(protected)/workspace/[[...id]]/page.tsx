@@ -13,7 +13,6 @@ import {
   Trash2, 
   MoreVertical, 
   ExternalLink,
-  Mail,
   UserCheck,
   UserX,
   Activity,
@@ -23,10 +22,29 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
-import { Dropdown } from "@/components/ui/dropdown";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  CardFooter 
+} from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StatsCard, TimelineItem, AvatarGroup } from "@/components/ui/shared";
 
 export default function WorkspaceDetail() {
@@ -38,7 +56,7 @@ export default function WorkspaceDetail() {
     const workId = Array.isArray(idArray) ? idArray[0] : idArray;
 
     // UI Tab toggle state
-    const [activeTab, setActiveTab] = useState<"overview" | "projects" | "members" | "activity" | "settings">("overview");
+    const [activeTab, setActiveTab] = useState<string>("overview");
 
     // Modal Visual states
     const [createWorkOpen, setCreateWorkOpen] = useState(false);
@@ -96,7 +114,7 @@ export default function WorkspaceDetail() {
                             <Input placeholder="Search workspaces..." className="pl-9 h-9" />
                         </div>
                         <Button 
-                            variant="primary" 
+                            variant="default" 
                             size="sm" 
                             className="h-9 font-bold"
                             onClick={() => setCreateWorkOpen(true)}
@@ -110,8 +128,8 @@ export default function WorkspaceDetail() {
                 {/* Workspace cards grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {mockWorkspaces.map((w) => (
-                        <Card key={w.id} className="h-48 flex flex-col justify-between p-5 relative">
-                            {/* Card Header & Drodown */}
+                        <Card key={w.id} className="h-48 flex flex-col justify-between p-5 relative bg-slate-950/20 border border-slate-850 hover:bg-slate-950/40 hover:border-slate-700 hover:scale-[1.01] transition-all">
+                            {/* Card Header & Dropdown */}
                             <div className="flex justify-between items-start">
                                 <div className="space-y-1.5 min-w-0">
                                     <div className="h-8 w-8 rounded-lg bg-slate-900 border border-slate-800 text-indigo-400 flex items-center justify-center font-bold text-xs uppercase">
@@ -119,17 +137,15 @@ export default function WorkspaceDetail() {
                                     </div>
                                     <h3 className="font-bold text-sm text-slate-200 truncate pr-4">{w.name}</h3>
                                 </div>
-                                <Dropdown 
-                                    trigger={
-                                        <button className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-slate-900 transition-colors">
-                                            <MoreVertical className="h-4.5 w-4.5" />
-                                        </button>
-                                    }
-                                    items={[
-                                        { label: "Edit Workspace", onClick: () => setEditWorkOpen(true) },
-                                        { label: "Delete Workspace", onClick: () => {}, variant: "danger" }
-                                    ]}
-                                />
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-slate-900 transition-colors cursor-pointer">
+                                        <MoreVertical className="h-4.5 w-4.5" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="bg-slate-950 border border-slate-850 text-slate-300">
+                                        <DropdownMenuItem onClick={() => setEditWorkOpen(true)} className="cursor-pointer">Edit Workspace</DropdownMenuItem>
+                                        <DropdownMenuItem className="text-rose-400 hover:text-rose-350 cursor-pointer">Delete Workspace</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
 
                             {/* Info layout */}
@@ -152,7 +168,7 @@ export default function WorkspaceDetail() {
                             </div>
 
                             {/* Open button overlay click */}
-                            <Link href={`/workspace/${w.id}`} className="absolute inset-x-0 bottom-0 py-2.5 bg-slate-950 hover:bg-slate-950/80 text-center text-[10px] font-bold text-indigo-400 hover:text-indigo-300 rounded-b-2xl transition-colors border-t border-slate-850/40">
+                            <Link href={`/workspace/${w.id}`} className="absolute inset-x-0 bottom-0 py-2.5 bg-slate-955 hover:bg-slate-955/80 text-center text-[10px] font-bold text-indigo-400 hover:text-indigo-300 rounded-b-2xl transition-colors border-t border-slate-850/40">
                                 Open Workspace
                             </Link>
                         </Card>
@@ -160,28 +176,31 @@ export default function WorkspaceDetail() {
                 </div>
 
                 {/* Create Modal Form */}
-                <Dialog 
-                    isOpen={createWorkOpen} 
-                    onClose={() => setCreateWorkOpen(false)}
-                    title="Create Workspace"
-                    description="Set up an organizational space for your projects."
-                >
-                    <div className="space-y-4 pt-1">
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
-                            <Input placeholder="Engineering Workspace, Marketing space" required />
+                <Dialog open={createWorkOpen} onOpenChange={setCreateWorkOpen}>
+                    <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                        <DialogHeader>
+                            <DialogTitle>Create Workspace</DialogTitle>
+                            <DialogDescription className="text-slate-400">
+                                Set up an organizational space for your projects.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-1">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
+                                <Input placeholder="Engineering Workspace, Marketing space" required />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2 text-xs">
+                                <Button variant="ghost" onClick={() => setCreateWorkOpen(false)}>Cancel</Button>
+                                <Button variant="default" onClick={() => setCreateWorkOpen(false)}>Create Workspace</Button>
+                            </div>
                         </div>
-                        <div className="flex justify-end gap-3 pt-2 text-xs">
-                            <Button variant="ghost" onClick={() => setCreateWorkOpen(false)}>Cancel</Button>
-                            <Button variant="primary" onClick={() => setCreateWorkOpen(false)}>Create Workspace</Button>
-                        </div>
-                    </div>
+                    </DialogContent>
                 </Dialog>
             </div>
         );
     }
 
-    // Mode B: WORKSPACE DETAIL (Team Hub)
+    // Mode B: SINGLE WORKSPACE DASHBOARD
     return (
         <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6 text-slate-100 font-sans">
             
@@ -209,35 +228,34 @@ export default function WorkspaceDetail() {
                     <Button variant="secondary" size="sm" onClick={() => setEditWorkOpen(true)}>
                         <Edit3 className="h-4 w-4 mr-1.5" /> Edit
                     </Button>
-                    <Button variant="danger" size="sm">
+                    <Button variant="destructive" size="sm">
                         <Trash2 className="h-4 w-4 mr-1.5" /> Delete
                     </Button>
                 </div>
             </div>
 
-            {/* Tabs Selector */}
-            <div className="flex bg-slate-950/40 p-1.5 rounded-xl border border-slate-850 shrink-0 text-xs font-semibold w-full overflow-x-auto">
-                {(["overview", "projects", "members", "activity", "settings"] as const).map((tab) => (
-                    <button 
-                        key={tab}
-                        onClick={() => setActiveTab(tab)} 
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all capitalize cursor-pointer shrink-0 ${activeTab === tab ? 'bg-indigo-650 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                    >
-                        {tab === 'overview' && <Briefcase className="h-3.5 w-3.5" />}
-                        {tab === 'projects' && <FolderKanban className="h-3.5 w-3.5" />}
-                        {tab === 'members' && <Users className="h-3.5 w-3.5" />}
-                        {tab === 'activity' && <Activity className="h-3.5 w-3.5" />}
-                        {tab === 'settings' && <SettingsIcon className="h-3.5 w-3.5" />}
-                        {tab}
-                    </button>
-                ))}
-            </div>
+            {/* Tabs Selector using official shadcn Tabs */}
+            <Tabs defaultValue="overview" className="w-full space-y-6" onValueChange={setActiveTab}>
+                <TabsList className="bg-slate-950/40 border border-slate-850 p-1 rounded-xl text-xs font-semibold w-full overflow-x-auto flex select-none">
+                    <TabsTrigger value="overview" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-650 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <Briefcase className="h-3.5 w-3.5" /> Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="projects" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-650 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <FolderKanban className="h-3.5 w-3.5" /> Projects
+                    </TabsTrigger>
+                    <TabsTrigger value="members" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-650 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <Users className="h-3.5 w-3.5" /> Members
+                    </TabsTrigger>
+                    <TabsTrigger value="activity" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-650 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <Activity className="h-3.5 w-3.5" /> Activity
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-slate-400 data-[state=active]:bg-indigo-650 data-[state=active]:text-white cursor-pointer shrink-0">
+                        <SettingsIcon className="h-3.5 w-3.5" /> Settings
+                    </TabsTrigger>
+                </TabsList>
 
-            {/* TAB PANELS */}
-            
-            {/* 1. Overview Tab */}
-            {activeTab === "overview" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 1. Overview Tab Content */}
+                <TabsContent value="overview" className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-0">
                     <div className="lg:col-span-2 space-y-6">
                         {/* Stats card sub-grid */}
                         <div className="grid grid-cols-2 gap-4">
@@ -245,12 +263,12 @@ export default function WorkspaceDetail() {
                             <StatsCard title="Active Members" value={mockWorkspaceDetails.members.length} icon={<Users className="h-4.5 w-4.5" />} />
                         </div>
 
-                        {/* Recent Projects sublist */}
+                        {/* Recent Projects */}
                         <div className="space-y-3">
                             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Recent Projects</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {mockWorkspaceDetails.projects.slice(0, 2).map((p) => (
-                                    <Card key={p.id} className="p-4 flex flex-col justify-between h-28 hover:border-slate-800 transition-colors">
+                                    <Card key={p.id} className="p-4 flex flex-col justify-between h-28 hover:border-slate-800 transition-colors bg-slate-955/20 border-slate-850">
                                         <div className="space-y-1">
                                             <h4 className="font-bold text-xs text-slate-200 truncate">{p.name}</h4>
                                             <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">{p.status}</span>
@@ -273,18 +291,16 @@ export default function WorkspaceDetail() {
                             ))}
                         </div>
                     </div>
-                </div>
-            )}
+                </TabsContent>
 
-            {/* 2. Projects Tab */}
-            {activeTab === "projects" && (
-                <div className="space-y-6">
+                {/* 2. Projects Tab Content */}
+                <TabsContent value="projects" className="space-y-6 pt-0">
                     <div className="flex items-center justify-between gap-4">
                         <div className="relative w-48 sm:w-60 shrink-0">
                             <SearchIcon className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
                             <Input placeholder="Search projects..." className="pl-9 h-9" />
                         </div>
-                        <Button variant="primary" size="sm" onClick={() => setCreateProjOpen(true)}>
+                        <Button variant="default" size="sm" onClick={() => setCreateProjOpen(true)}>
                             <Plus className="h-4 w-4 mr-1.5" />
                             Create Project
                         </Button>
@@ -293,11 +309,11 @@ export default function WorkspaceDetail() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {mockWorkspaceDetails.projects.map((p) => (
                             <Link href={`/project/${p.id}`} key={p.id} className="block group">
-                                <Card hoverable className="p-5 flex flex-col justify-between h-36">
+                                <Card className="p-5 flex flex-col justify-between h-36 bg-slate-950/20 border-slate-850 hover:bg-slate-955/40 hover:border-slate-700 hover:scale-[1.01] transition-all">
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between items-center">
                                             <h4 className="font-bold text-xs text-slate-200 group-hover:text-indigo-400 transition-colors truncate pr-3">{p.name}</h4>
-                                            <Badge variant={p.status === 'COMPLETED' ? 'success' : 'info'}>{p.status}</Badge>
+                                            <Badge>{p.status}</Badge>
                                         </div>
                                         <p className="text-[10px] text-slate-500 font-semibold">{p.tasksCount} Tasks Registered</p>
                                     </div>
@@ -315,14 +331,12 @@ export default function WorkspaceDetail() {
                             </Link>
                         ))}
                     </div>
-                </div>
-            )}
+                </TabsContent>
 
-            {/* 3. Members Tab */}
-            {activeTab === "members" && (
-                <div className="space-y-6">
+                {/* 3. Members Tab Content */}
+                <TabsContent value="members" className="space-y-6 pt-0">
                     <div className="flex justify-end">
-                        <Button variant="primary" size="sm" onClick={() => setInviteMemberOpen(true)}>
+                        <Button variant="default" size="sm" onClick={() => setInviteMemberOpen(true)}>
                             <Plus className="h-4 w-4 mr-1.5" /> Invite Member
                         </Button>
                     </div>
@@ -352,22 +366,20 @@ export default function WorkspaceDetail() {
                                             </td>
                                             <td className="p-4 text-slate-400">{m.email}</td>
                                             <td className="p-4">
-                                                <Badge variant={m.role === 'OWNER' ? 'info' : m.role === 'ADMIN' ? 'warning' : 'default'}>
+                                                <Badge>
                                                     {m.role}
                                                 </Badge>
                                             </td>
                                             <td className="p-4 text-right">
-                                                <Dropdown 
-                                                    trigger={
-                                                        <button className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-slate-950 border border-transparent hover:border-slate-850 transition-all cursor-pointer">
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </button>
-                                                    }
-                                                    items={[
-                                                        { label: "Promote to Admin", onClick: () => {}, icon: <UserCheck className="h-3.5 w-3.5" /> },
-                                                        { label: "Remove from Team", onClick: () => {}, icon: <UserX className="h-3.5 w-3.5" />, variant: "danger" }
-                                                    ]}
-                                                />
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger className="p-1 text-slate-500 hover:text-white rounded-lg hover:bg-slate-950 border border-transparent hover:border-slate-855 transition-all cursor-pointer">
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="bg-slate-955 border border-slate-850 text-slate-300">
+                                                        <DropdownMenuItem className="cursor-pointer">Promote to Admin</DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-rose-400 hover:text-rose-350 cursor-pointer">Remove from Team</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </td>
                                         </tr>
                                     )
@@ -375,30 +387,28 @@ export default function WorkspaceDetail() {
                             </tbody>
                         </table>
                     </div>
-                </div>
-            )}
+                </TabsContent>
 
-            {/* 4. Activity Tab */}
-            {activeTab === "activity" && (
-                <div className="bg-slate-955/20 border border-slate-850 rounded-2xl p-6 max-w-xl">
-                    <div className="space-y-4">
-                        {mockWorkspaceDetails.activities.map((act) => (
-                            <TimelineItem key={act.id} user={act.user} title={act.title} time={act.time} />
-                        ))}
+                {/* 4. Activity Tab Content */}
+                <TabsContent value="activity" className="pt-0">
+                    <div className="bg-slate-955/20 border border-slate-850 rounded-2xl p-6 max-w-xl">
+                        <div className="space-y-4">
+                            {mockWorkspaceDetails.activities.map((act) => (
+                                <TimelineItem key={act.id} user={act.user} title={act.title} time={act.time} />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                </TabsContent>
 
-            {/* 5. Workspace Settings Tab */}
-            {activeTab === "settings" && (
-                <div className="space-y-6 max-w-2xl">
+                {/* 5. Workspace Settings Content */}
+                <TabsContent value="settings" className="space-y-6 max-w-2xl pt-0">
                     <div className="bg-slate-955/20 border border-slate-850 rounded-2xl p-6 space-y-6">
                         {/* Rename workspace */}
                         <div className="space-y-2">
                             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Rename Workspace</h3>
                             <div className="flex gap-3">
                                 <Input placeholder="Edit brand name..." defaultValue={mockWorkspaceDetails.name} className="flex-1" />
-                                <Button variant="primary">Save</Button>
+                                <Button variant="default">Save</Button>
                             </div>
                         </div>
 
@@ -420,72 +430,81 @@ export default function WorkspaceDetail() {
                             <p className="text-slate-500 text-xs leading-relaxed">
                                 Once deleted, this workspace and all associated boards, metrics, and tasks will be permanently removed.
                             </p>
-                            <Button variant="danger">
+                            <Button variant="destructive">
                                 <Trash2 className="h-4 w-4 mr-1.5" />
                                 Delete Workspace
                             </Button>
                         </div>
                     </div>
-                </div>
-            )}
+                </TabsContent>
+            </Tabs>
 
-            {/* Creator Dialog Forms */}
-            <Dialog 
-                isOpen={createProjOpen} 
-                onClose={() => setCreateProjOpen(false)}
-                title="Create Project"
-                description="Link a workspace task board for team sprints."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
-                        <Input placeholder="Branding design Q3 Board" required />
+            {/* Dialog Forms portals */}
+            <Dialog open={createProjOpen} onOpenChange={setCreateProjOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Create Project</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Link a workspace task board for team sprints.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Project Name</label>
+                            <Input placeholder="Branding design Q3 Board" required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setCreateProjOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setCreateProjOpen(false)}>Create Project</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setCreateProjOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setCreateProjOpen(false)}>Create Project</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={inviteMemberOpen} 
-                onClose={() => setInviteMemberOpen(false)}
-                title="Invite Member"
-                description="Invite an existing user into this workspace team."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Email Address</label>
-                        <Input type="email" placeholder="name@company.com" required />
+            <Dialog open={inviteMemberOpen} onOpenChange={setInviteMemberOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Invite Member</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Invite an existing user into this workspace team.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Email Address</label>
+                            <Input type="email" placeholder="name@company.com" required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setInviteMemberOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setInviteMemberOpen(false)}>Invite User</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setInviteMemberOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setInviteMemberOpen(false)}>Invite User</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog 
-                isOpen={editWorkOpen} 
-                onClose={() => setEditWorkOpen(false)}
-                title="Edit Workspace"
-                description="Update core specifications of the workspace."
-            >
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
-                        <Input placeholder="Rename workspace..." defaultValue={mockWorkspaceDetails.name} required />
+            <Dialog open={editWorkOpen} onOpenChange={setEditWorkOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Edit Workspace</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Update core specifications of the workspace.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Workspace Name</label>
+                            <Input placeholder="Rename workspace..." defaultValue={mockWorkspaceDetails.name} required />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
+                            <Input placeholder="Update description..." defaultValue={mockWorkspaceDetails.description} />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setEditWorkOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setEditWorkOpen(false)}>Update</Button>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Description</label>
-                        <Input placeholder="Update description..." defaultValue={mockWorkspaceDetails.description} />
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setEditWorkOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setEditWorkOpen(false)}>Update</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
         </div>

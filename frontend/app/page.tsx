@@ -52,7 +52,7 @@ export default function Home() {
               <Button variant="ghost" size="sm">Login</Button>
             </Link>
             <Link href="/register">
-              <Button variant="primary" size="sm">Sign Up</Button>
+              <Button variant="default" size="sm">Sign Up</Button>
             </Link>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function Home() {
 
         <div className="mt-8">
           <Link href="/register">
-            <Button variant="primary" size="lg" className="group">
+            <Button variant="default" size="lg" className="group">
               Get Started
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform" />
             </Button>
@@ -139,7 +139,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f, idx) => (
-              <Card key={idx} hoverable className="space-y-4">
+              <Card key={idx} className="space-y-4 hover:border-indigo-500/20 transition-all hover:bg-slate-900/40">
                 <div className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center">
                   {f.icon}
                 </div>
@@ -190,7 +190,7 @@ export default function Home() {
                 </ul>
               </div>
               <Link href="/register" className="pt-6 block">
-                <Button variant={p.popular ? "primary" : "secondary"} className="w-full">
+                <Button variant={p.popular ? "default" : "secondary"} className="w-full">
                   Choose Plan
                 </Button>
               </Link>

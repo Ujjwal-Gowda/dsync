@@ -9,6 +9,7 @@ import projectsRoutes from "./routes/projectsRoutes.ts";
 import activityRoutes from "./routes/activityRoutes.ts";
 import tasksRoutes from "./routes/tasksRoutes.ts";
 import commentsRoutes from "./routes/commentsRoutes.ts";
+import statsRoutes from "./routes/statsRoutes.ts";
 import prisma from "./config/prisma.ts";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -34,10 +35,11 @@ app.get("/api", (req, res) => {
         health: "/health",
         auth: "/auth",
         workspace: "/workspaces",
-        projects: "/projects",
+                projects: "/projects",
         tasks: "/tasks",
         comment: "/comments",
-        activity: "/activity"
+        activity: "/activity",
+        stats: "/stats"
     });
 });
 
@@ -54,6 +56,8 @@ app.use("/tasks", tasksRoutes);
 app.use("/comments", commentsRoutes);
 
 app.use("/activity", activityRoutes);
+
+app.use("/stats", statsRoutes);
 
 app.listen(PORT, () => {
     console.log(`server running on port http://localhost:${PORT}`);

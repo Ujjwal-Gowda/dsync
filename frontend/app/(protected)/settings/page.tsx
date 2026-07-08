@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
+
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<"profile" | "account" | "workspace" | "appearance" | "security">("profile");
@@ -67,7 +67,7 @@ export default function SettingsPage() {
                             <Input placeholder="name@company.com" defaultValue="ujjwal@dsync.io" />
                         </div>
                         <div className="pt-2">
-                            <Button variant="primary">
+                            <Button variant="default">
                                 <Save className="h-4 w-4 mr-1.5" /> Save Changes
                             </Button>
                         </div>
@@ -88,14 +88,14 @@ export default function SettingsPage() {
                                 <Input type="password" placeholder="••••••••" />
                             </div>
                             <div className="pt-1">
-                                <Button variant="primary">Update Password</Button>
+                                <Button variant="default">Update Password</Button>
                             </div>
                         </div>
 
                         <div className="border-t border-slate-900 pt-5 space-y-3">
                             <h3 className="text-xs font-bold text-rose-400 uppercase tracking-wider">Danger Zone</h3>
                             <p className="text-slate-500 text-xs leading-relaxed">Deactivating your account deletes workspaces owned by you permanently.</p>
-                            <Button variant="danger">
+                            <Button variant="destructive">
                                 <Trash2 className="h-4 w-4 mr-1.5" /> Delete Account
                             </Button>
                         </div>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
                         </div>
 
                         <div className="pt-4 border-t border-slate-900">
-                            <Button variant="danger" className="w-full">
+                            <Button variant="destructive" className="w-full">
                                 <LogOut className="h-4 w-4 mr-1.5" /> Logout All Other Devices
                             </Button>
                         </div>

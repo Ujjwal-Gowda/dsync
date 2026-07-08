@@ -8,21 +8,23 @@ import {
   MessageSquare, 
   Calendar, 
   User, 
-  Tag, 
   Trash2, 
   Clock, 
   AlertCircle,
   Save,
-  CheckSquare,
   Paperclip,
   GitBranch,
-  Edit2,
-  CheckCircle,
-  HelpCircle
+  Edit2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { TimelineItem } from "@/components/ui/shared";
@@ -99,7 +101,7 @@ export default function TaskDetail() {
                     <Button variant="secondary" size="sm" onClick={() => setAssignTaskOpen(true)}>
                         <User className="h-3.5 w-3.5 mr-1.5" /> Assign
                     </Button>
-                    <Button variant="danger" size="sm">
+                    <Button variant="destructive" size="sm">
                         <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
                     </Button>
                 </div>
@@ -119,7 +121,7 @@ export default function TaskDetail() {
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-slate-955/20 border border-slate-850 rounded-2xl text-xs">
                             <div className="space-y-1">
                                 <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Status</span>
-                                <Badge variant="info">{mockTask.status}</Badge>
+                                <Badge>{mockTask.status}</Badge>
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Priority</span>
@@ -183,7 +185,7 @@ export default function TaskDetail() {
                                     className="w-full bg-slate-950 border border-slate-850 focus:border-indigo-500 rounded-xl p-3 text-xs text-slate-200 outline-none h-28 resize-none"
                                 />
                                 <div className="flex justify-end">
-                                    <Button variant="primary" size="sm" onClick={() => setIsEditingDesc(false)}>
+                                    <Button variant="default" size="sm" onClick={() => setIsEditingDesc(false)}>
                                         <Save className="h-3.5 w-3.5 mr-1" /> Save
                                     </Button>
                                 </div>
@@ -264,49 +266,73 @@ export default function TaskDetail() {
 
             </div>
 
-            {/* Actions Portals */}
-            <Dialog isOpen={editTaskOpen} onClose={() => setEditTaskOpen(false)} title="Edit Task" description="Modify task configuration.">
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
-                        <Input defaultValue={mockTask.title} required />
+            {/* Actions Dialogs using official Dialog component */}
+            <Dialog open={editTaskOpen} onOpenChange={setEditTaskOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Edit Task</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Modify task configuration.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Task Title</label>
+                            <Input defaultValue={mockTask.title} required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setEditTaskOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setEditTaskOpen(false)}>Save</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setEditTaskOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setEditTaskOpen(false)}>Save</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog isOpen={moveTaskOpen} onClose={() => setMoveTaskOpen(false)} title="Move Task" description="Shift task to another project board column.">
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Status</label>
-                        <select className="w-full bg-slate-955 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3 text-xs text-slate-200 outline-none">
-                            <option>TODO</option>
-                            <option>IN PROGRESS</option>
-                            <option>IN REVIEW</option>
-                            <option>DONE</option>
-                        </select>
+            <Dialog open={moveTaskOpen} onOpenChange={setMoveTaskOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Move Task</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Shift task to another project board column.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Status</label>
+                            <select className="w-full bg-slate-955 border border-slate-800 focus:border-indigo-500 rounded-xl py-2 px-3 text-xs text-slate-200 outline-none">
+                                <option>TODO</option>
+                                <option>IN PROGRESS</option>
+                                <option>IN REVIEW</option>
+                                <option>DONE</option>
+                            </select>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setMoveTaskOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setMoveTaskOpen(false)}>Move Status</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setMoveTaskOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setMoveTaskOpen(false)}>Move Status</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
-            <Dialog isOpen={assignTaskOpen} onClose={() => setAssignTaskOpen(false)} title="Assign Task" description="Delegate this task sheet to another user.">
-                <div className="space-y-4 pt-1">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assignee Name</label>
-                        <Input placeholder="Enter teammate name..." required />
+            <Dialog open={assignTaskOpen} onOpenChange={setAssignTaskOpen}>
+                <DialogContent className="bg-slate-900 border border-slate-800 text-slate-100">
+                    <DialogHeader>
+                        <DialogTitle>Assign Task</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Delegate this task sheet to another user.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assignee Name</label>
+                            <Input placeholder="Enter teammate name..." required />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2 text-xs">
+                            <Button variant="ghost" onClick={() => setAssignTaskOpen(false)}>Cancel</Button>
+                            <Button variant="default" onClick={() => setAssignTaskOpen(false)}>Assign Task</Button>
+                        </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-2 text-xs">
-                        <Button variant="ghost" onClick={() => setAssignTaskOpen(false)}>Cancel</Button>
-                        <Button variant="primary" onClick={() => setAssignTaskOpen(false)}>Assign Task</Button>
-                    </div>
-                </div>
+                </DialogContent>
             </Dialog>
 
         </div>
