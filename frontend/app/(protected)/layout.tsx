@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CurrentUser from '@/hooks/currentUser';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from "@/components/app-sidebar"
 
 export default function ProtectedLayout({
     children,
@@ -32,14 +34,12 @@ export default function ProtectedLayout({
     }
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <aside className="w-64 bg-slate-900 text-white p-4">
-                <h2>Dsync</h2>
-                <p>Welcome, {user.name}!</p>
-            </aside>
-            <main className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <SidebarProvider>
+            <AppSidebar />
+            <main className="flex-1 flex flex-col">
+                <SidebarTrigger />
                 {children}
             </main>
-        </div>
+        </SidebarProvider>
     );
 }
