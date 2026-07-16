@@ -10,7 +10,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { LayoutDashboard, Briefcase, FolderKanban, CheckSquare, User, Settings } from "lucide-react"
+import { LayoutDashboard, Briefcase, FolderKanban, CheckSquare, User, Settings, Mail } from "lucide-react"
 import Link from "next/link"
 import CurrentUser from "@/hooks/currentUser"
 import { usePathname } from "next/navigation"
@@ -24,6 +24,7 @@ export function AppSidebar() {
         { title: "Workspaces", url: "/workspace", icon: Briefcase },
         { title: "Projects", url: "/project", icon: FolderKanban },
         { title: "Tasks", url: "/task", icon: CheckSquare },
+        { title: "Notifications", url: "/notification", icon: Mail },
     ]
 
     return (
@@ -53,13 +54,12 @@ export function AppSidebar() {
                                         <SidebarMenuButton
                                             render={<Link href={item.url} />}
                                             isActive={isActive}
-                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                                                isActive 
-                                                    ? "bg-primary text-primary-foreground font-semibold shadow-sm shadow-primary/10" 
-                                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                                            }`}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${isActive
+                                                ? "bg-primary text-primary-foreground font-semibold shadow-sm shadow-primary/10"
+                                                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                                }`}
                                         >
-                                            <item.icon className={`h-4.5 w-4.5 ${isActive ? "text-primary-foreground" : "text-muted-foreground/80 group-hover:text-foreground"}`} />
+                                            <item.icon className={`h-4.5 w-4.5 ${isActive ? "" : "text-muted-foreground/80 group-hover:text-foreground"}`} />
                                             <span className="text-sm">{item.title}</span>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>

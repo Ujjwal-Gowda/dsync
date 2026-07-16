@@ -57,8 +57,9 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
+
+    const { email, password } = req.body;
     try {
-        const { email, password } = req.body;
         if (!email || !password) {
             return res.status(400).json({ error: "missing fields" });
         }
@@ -74,7 +75,6 @@ export const loginUser = async (req: Request, res: Response) => {
         }
 
         const isMatch = await bcrypt.compare(password, userData?.password);
-        console.log(isMatch);
 
         if (!isMatch) {
             return res.status(401).json({ error: "wrong password" });

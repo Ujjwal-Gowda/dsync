@@ -9,6 +9,7 @@ import projectsRoutes from "./routes/projectsRoutes.ts";
 import activityRoutes from "./routes/activityRoutes.ts";
 import tasksRoutes from "./routes/tasksRoutes.ts";
 import commentsRoutes from "./routes/commentsRoutes.ts";
+import dashboardRoutes from "./routes/dashboardRoutes.ts";
 import prisma from "./config/prisma.ts";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -54,6 +55,8 @@ app.use("/tasks", tasksRoutes);
 app.use("/comments", commentsRoutes);
 
 app.use("/activity", activityRoutes);
+
+app.use("/dashboard", dashboardRoutes);
 
 app.listen(PORT, () => {
     console.log(`server running on port http://localhost:${PORT}`);
