@@ -126,18 +126,18 @@ export const getUpcomingTasks = async (req: Request, res: Response) => {
 
         const userId = Number(user.id);
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
+        const userWorkspaces = await prisma.workspaceMembers.findMany({
+            where: { userId },
+            select: { workspaceId: true }
+        });
 
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-
-        const tomorrowStart = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-        const tomorrowEnd = new Date(todayEnd.getTime() + 24 * 60 * 60 * 1000);
+        const workspaceIds = userWorkspaces.map(w => w.workspaceId);
 
         const tasks = await prisma.task.findMany({
             where: {
-                assigneeId: userId,
+                project: {
+                    workspaceId: { in: workspaceIds }
+                },
                 status: { not: "DONE" },
                 dueDate: { not: null },
                 deletedAt: null
@@ -153,20 +153,13 @@ export const getUpcomingTasks = async (req: Request, res: Response) => {
             },
             orderBy: {
                 dueDate: "asc"
-            }
+            },
+            take: 15
         });
-
-        const dueToday = tasks.filter(t => t.dueDate! >= todayStart && t.dueDate! <= todayEnd);
-        const dueTomorrow = tasks.filter(t => t.dueDate! >= tomorrowStart && t.dueDate! <= tomorrowEnd);
-        const overdue = tasks.filter(t => t.dueDate! < todayStart);
 
         return res.status(200).json({
             status: "success",
-            data: {
-                dueToday,
-                dueTomorrow,
-                overdue
-            }
+            data: tasks
         });
     } catch (error) {
         console.error("Error fetching upcoming tasks:", error);

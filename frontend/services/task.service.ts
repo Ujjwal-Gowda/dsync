@@ -9,9 +9,9 @@ enum sortBy {
     title = "title"
 }
 
-export async function createTask(projId: number, title: string, description: string, priority: Priority, assignee: number) {
+export async function createTask(projId: number, title: string, description: string, priority: Priority, assignee: number, dueDate?: string) {
     try {
-        const response = await api.post(`/projects/${projId}/task`, { title, description, priority, assignee })
+        const response = await api.post(`/projects/${projId}/task`, { title, description, priority, assignee, dueDate })
         return response.data
     } catch (error) {
         console.log("error creating task", error)
@@ -31,9 +31,9 @@ export async function getTasks(projId: number, page: number, limit: number, stat
     }
 }
 
-export async function updateTask(taskId: number, title?: string, description?: string, priority?: Priority, assignee?: number) {
+export async function updateTask(taskId: number, title?: string, description?: string, priority?: Priority, assignee?: number, dueDate?: string | null) {
     try {
-        const response = await api.patch(`/tasks/${taskId}`, { title, description, priority, assignee })
+        const response = await api.patch(`/tasks/${taskId}`, { title, description, priority, assignee, dueDate })
         return response.data
     } catch (error) {
         console.log("error updating task", error)

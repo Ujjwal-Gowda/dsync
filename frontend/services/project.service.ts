@@ -14,7 +14,10 @@ export async function createProjects(workId: number, name: string, description: 
 
 export async function getProjects(workId: number, status?: ProjectStatus, search?: string) {
     try {
-        const response = await api.get(`/workspaces/${workId}/projects?status=${status}&search=${search}`)
+        // const response = await api.get(`/workspaces/${workId}/projects?status=${status}&search=${search}`)
+        const response = await api.get(`/workspaces/${workId}/projects`, {
+            params: { status, search }
+        });
         return response.data
     } catch (error) {
         console.log("error fetching projects", error)

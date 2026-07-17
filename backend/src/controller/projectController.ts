@@ -171,7 +171,7 @@ export const deleteProject = async (req: Request, res: Response) => {
 };
 
 export const createTask = async (req: Request, res: Response) => {
-  const { title, description, priority, assignee } = req.body;
+  const { title, description, priority, assignee, dueDate } = req.body;
   const projectId = Number(req.params.id);
   const user = req.user;
   try {
@@ -220,6 +220,7 @@ export const createTask = async (req: Request, res: Response) => {
         projectId: project.id,
         createdById: user.id,
         assigneeId: assignee ?? null,
+        dueDate: dueDate ? new Date(dueDate) : null,
       },
     });
 

@@ -4,7 +4,7 @@ import { Priority } from "../generated/prisma/enums.ts";
 import { createActivity } from "../services/acitvity.services.ts";
 
 export const updateTask = async (req: Request, res: Response) => {
-  const { title, description, priority, assignee } = req.body;
+  const { title, description, priority, assignee, dueDate } = req.body;
   const taskId = Number(req.params.id);
   const user = req.user;
   try {
@@ -54,6 +54,7 @@ export const updateTask = async (req: Request, res: Response) => {
       description?: string;
       priority?: Priority;
       assigneeId?: number | null;
+      dueDate?: Date | null;
     } = {};
 
     if (title) updateData.title = title;
@@ -80,6 +81,10 @@ export const updateTask = async (req: Request, res: Response) => {
         });
       }
       updateData.assigneeId = assignee;
+    }
+
+    if (dueDate !== undefined) {
+      updateData.dueDate = dueDate ? new Date(dueDate) : null;
     }
 
     if (Object.keys(updateData).length === 0) {
